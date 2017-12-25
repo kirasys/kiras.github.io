@@ -101,7 +101,16 @@
       
         <p>p-1 factorization 알고리즘은 N = pq (p,q 는 소수) 에서 N을 소인수 분해하는 알고리즘이다. </p>
 <h3 id="Concept"><a href="#Concept" class="headerlink" title="Concept"></a>Concept</h3><p>p가 소수일 때 a<sup>p-1</sup> = 1 (mod p) 를 만족한다. 마찬가지로 a<sup>k(p-1)</sup> = 1 이므로 a<sup>k(p-1)</sup> - 1 은 p의 곱으로 표현할 수 있다. k(p-1)을 알 수 없으므로 2!, 3!, 4! … n!(n &lt; B-smooth) 사용하고 gcd(a<sup>k(p-1)</sup> - 1,N) 을 계산하여 인수를 찾는다. 그래서 p-1 이 smooth number일 때 사용하기 적절하다. </p>
-<h3 id="Algorithm"><a href="#Algorithm" class="headerlink" title="Algorithm"></a>Algorithm</h3>
+<h3 id="Algorithm"><a href="#Algorithm" class="headerlink" title="Algorithm"></a>Algorithm</h3><pre><code>a,B = 2,10000
+gcd_result,i = 1,1
+
+while gcd_result&lt;=1:
+    i += 1
+    if i&gt;B:
+        break
+    a = pow(a,i,n)
+    gcd_result = GCD(a-1,n)
+</code></pre>
       
     </div>
 </article>
