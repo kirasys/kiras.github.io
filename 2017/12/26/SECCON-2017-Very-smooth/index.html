@@ -73,7 +73,7 @@
       <h3 id="1-Question"><a href="#1-Question" class="headerlink" title="1. Question"></a>1. Question</h3><blockquote>
 <p>Very smooth<br>Decrypt index.html from PCAP.<br>Please, submit the flag in the format: “SECCON{“ + Answer + “}”</p>
 <ul>
-<li>Answer is written in index.html<br><br></li>
+<li>Answer is written in index.html<br><br><br></li>
 </ul>
 </blockquote>
 <h3 id="2-Write-up"><a href="#2-Write-up" class="headerlink" title="2. Write-up"></a>2. Write-up</h3><p>pcap 파일을 열어보면 ssl 통신으로 패킷을 주고받은 것을 확인할 수 있다. server hello 패킷을 보면 index.html은 TLS_RSA_WITH_AES_128_CBC_SHA 방식으로 암호화된다는 것을 확인할 수 있다. 문제 이름이 “Very smooth” 인걸로 봐서 RSA 암호화에 사용되는 소수 p,q 가 smooth number 라는 힌트인 것 같다. server hello 패킷에서 인증서를 덤프하고 p-1 factorization 알고리즘으로 N을 인수 분해하여 private key를 알아낼 수 있었다.</p>
