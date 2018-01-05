@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>KiraSys</title>
+  <title>HITCON 2017 - Seccomp | KiraSys</title>
   
   
   <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
@@ -63,43 +63,14 @@
 
     <div class="container">
         <div data-pager-shell>
-            <ul class="Index">
-  
+            <div>
+  <article class='ContentView'>
     <header class='PageTitle'>
-        <h1>{ Reversing }</h1>
+        <h1>HITCON 2017 - Seccomp</h1>
     </header>
-  
-  
-    <li>
-      <article class='ListView'>
-    <header class="title">
-      
-        <h1>
-          <a href="/2018/01/02/HITCON-2017-Seccomp/">HITCON 2017 - Seccomp</a>
-        </h1>
-      
-      <div class='ListMeta'>
-  <time datetime="2018-01-02T04:52:12.000Z" itemprop="datePublished">
-    2018-01-02
-  </time>
-  
-  
-  / 
-  <ul>
-    
-  <li class="meta-text">
-  { <a href="/categories/reversing/">Reversing</a> }
-  </li>
 
-
-  </ul>
-  
-</div>
-
-    </header>
-    <div>
-      
-        <h3 id="1-Question"><a href="#1-Question" class="headerlink" title="1. Question"></a>1. Question</h3><blockquote>
+    <section>
+      <h3 id="1-Question"><a href="#1-Question" class="headerlink" title="1. Question"></a>1. Question</h3><blockquote>
 <p>Seccomp<br>I learned how to write seccomp rules, now is your turn.</p>
 </blockquote>
 <p><br></p>
@@ -120,14 +91,26 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#solve.py</span></span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">from</span> Crypto.Util.number <span class="keyword">import</span> inverse</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">Inverse</span><span class="params">(m,p)</span>:</span></span><br><span class="line">	<span class="keyword">if</span> m==<span class="number">0</span>:</span><br><span class="line">		m=<span class="number">65536</span></span><br><span class="line">	m = (m * inverse(p,<span class="number">0x10001</span>))%<span class="number">0x10001</span></span><br><span class="line">	<span class="keyword">if</span> m==<span class="number">65536</span>:</span><br><span class="line">		m=<span class="number">0</span></span><br><span class="line">	<span class="keyword">return</span> m</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">MUL</span><span class="params">(m,v)</span>:</span></span><br><span class="line">	<span class="keyword">if</span> m==<span class="number">0</span>:</span><br><span class="line">		m=<span class="number">65536</span></span><br><span class="line">	m = (m*v)%<span class="number">0x10001</span></span><br><span class="line">	<span class="keyword">if</span> m==<span class="number">65536</span>:</span><br><span class="line">		m=<span class="number">0</span></span><br><span class="line">	<span class="keyword">return</span> m</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">round</span><span class="params">(mem,v)</span>:</span></span><br><span class="line">	mem[<span class="number">1</span>],mem[<span class="number">2</span>] = mem[<span class="number">2</span>],mem[<span class="number">1</span>]</span><br><span class="line">	mem[<span class="number">4</span>] = mem[<span class="number">0</span>]^mem[<span class="number">2</span>]</span><br><span class="line">	mem[<span class="number">5</span>] = mem[<span class="number">1</span>]^mem[<span class="number">3</span>]</span><br><span class="line">	mem[<span class="number">4</span>] = MUL(mem[<span class="number">4</span>],v[<span class="number">4</span>])</span><br><span class="line">	mem[<span class="number">5</span>] = (mem[<span class="number">4</span>]+mem[<span class="number">5</span>])&amp;<span class="number">0xffff</span></span><br><span class="line">	mem[<span class="number">5</span>] = MUL(mem[<span class="number">5</span>],v[<span class="number">5</span>])</span><br><span class="line">	mem[<span class="number">4</span>] = (mem[<span class="number">4</span>]+mem[<span class="number">5</span>])&amp;<span class="number">0xffff</span></span><br><span class="line">	mem[<span class="number">3</span>] = mem[<span class="number">3</span>]^mem[<span class="number">4</span>]</span><br><span class="line">	mem[<span class="number">2</span>] = mem[<span class="number">2</span>]^mem[<span class="number">5</span>]</span><br><span class="line">	mem[<span class="number">1</span>] = mem[<span class="number">1</span>]^mem[<span class="number">4</span>]</span><br><span class="line">	mem[<span class="number">0</span>] = mem[<span class="number">0</span>]^mem[<span class="number">5</span>]</span><br><span class="line">	mem[<span class="number">3</span>] = Inverse(mem[<span class="number">3</span>],v[<span class="number">3</span>])</span><br><span class="line">	mem[<span class="number">2</span>] = (mem[<span class="number">2</span>]-v[<span class="number">2</span>])&amp;<span class="number">0xffff</span></span><br><span class="line">	mem[<span class="number">1</span>] = (mem[<span class="number">1</span>]-v[<span class="number">1</span>])&amp;<span class="number">0xffff</span></span><br><span class="line">	mem[<span class="number">0</span>] = Inverse(mem[<span class="number">0</span>],v[<span class="number">0</span>])</span><br><span class="line">	<span class="keyword">return</span> mem</span><br><span class="line"></span><br><span class="line">expression = open(<span class="string">'expression.txt'</span>,<span class="string">'r'</span>).read()</span><br><span class="line">regular = <span class="string">"""(mem\[0\] = \(mem\[0\]\*(0x[0-9a-z]+)\)%0x10001</span></span><br><span class="line"><span class="string">mem\[1\] = \(mem\[1\]\+(0x[0-9a-z]+)\)&amp;0xffff</span></span><br><span class="line"><span class="string">mem\[2\] = \(mem\[2\]\+(0x[0-9a-z]+)\)&amp;0xffff</span></span><br><span class="line"><span class="string">mem\[3\] = \(mem\[3\]\*(0x[0-9a-z]+)\)%0x10001</span></span><br><span class="line"><span class="string">mem\[4\] = mem\[0\]\^mem\[2\]</span></span><br><span class="line"><span class="string">mem\[5\] = mem\[1\]\^mem\[3\]</span></span><br><span class="line"><span class="string">mem\[4\] = \(mem\[4\]\*(0x[0-9a-z]+)\)%0x10001</span></span><br><span class="line"><span class="string">mem\[5\] = \(mem\[4\]\+mem\[5\]\)&amp;0xffff</span></span><br><span class="line"><span class="string">mem\[5\] = \(mem\[5\]\*(0x[0-9a-z]+)\)%0x10001</span></span><br><span class="line"><span class="string">mem\[4\] = \(mem\[4\]\+mem\[5\]\)&amp;0xffff</span></span><br><span class="line"><span class="string">mem\[0\] = mem\[0\]\^mem\[5\]</span></span><br><span class="line"><span class="string">mem\[1\] = mem\[1\]\^mem\[4\]</span></span><br><span class="line"><span class="string">mem\[2\] = mem\[2\]\^mem\[5\]</span></span><br><span class="line"><span class="string">mem\[3\] = mem\[3\]\^mem\[4\]</span></span><br><span class="line"><span class="string">mem\[1\],mem\[2\] = mem\[2\],mem\[1\])</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"></span><br><span class="line">regular_end = <span class="string">"""mem\[0\] = \(mem\[0\]\*(0x[0-9a-z]+)\)%0x10001</span></span><br><span class="line"><span class="string">mem\[1\] = \(mem\[1\]\+(0x[0-9a-z]+)\)&amp;0xffff</span></span><br><span class="line"><span class="string">mem\[2\] = \(mem\[2\]\+(0x[0-9a-z]+)\)&amp;0xffff</span></span><br><span class="line"><span class="string">mem\[3\] = \(mem\[3\]\*(0x[0-9a-z]+)\)%0x10001</span></span><br><span class="line"><span class="string">END"""</span></span><br><span class="line"></span><br><span class="line">pat = re.compile(regular_end)</span><br><span class="line">v1,v2,v3,v4 = map(<span class="keyword">lambda</span> a:int(a,<span class="number">16</span>),pat.findall(expression)[<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">mem = [<span class="number">44702</span>,<span class="number">45409</span>,<span class="number">6003</span>,<span class="number">2695</span>,<span class="number">0</span>,<span class="number">0</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(mem)):</span><br><span class="line">	mem[i] ^= <span class="number">4919</span></span><br><span class="line"></span><br><span class="line">mem[<span class="number">3</span>] = Inverse(mem[<span class="number">3</span>],v4)</span><br><span class="line">mem[<span class="number">2</span>] = (mem[<span class="number">2</span>] - v3)&amp;<span class="number">0xffff</span></span><br><span class="line">mem[<span class="number">1</span>] = (mem[<span class="number">1</span>] - v2)&amp;<span class="number">0xffff</span></span><br><span class="line">mem[<span class="number">0</span>] = Inverse(mem[<span class="number">0</span>],v1)</span><br><span class="line">mem[<span class="number">1</span>],mem[<span class="number">2</span>] = mem[<span class="number">2</span>],mem[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">pat = re.compile(regular)</span><br><span class="line">results = pat.findall(expression)[::<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> r <span class="keyword">in</span> results:</span><br><span class="line">	v = map(<span class="keyword">lambda</span> a:int(a,<span class="number">16</span>),r[<span class="number">1</span>:])</span><br><span class="line">	mem = round(mem,v)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> mem[:<span class="number">4</span>]</span><br></pre></td></tr></table></figure>
 <p>expressio.txt 에는 처음 변수를 넣는 과정, if문 검사를 제외하고 8번째 루틴의 swap 연산을 추가한 코드가 들어간다. 정규식을 통해 8번 진행되는 encryption에서 사용하는 정수를 모두 뽑아오고 round 함수에서 역연산이 진행된다. args[0]~args[5] 까지 반복하면 flag를 구할 수 있다.</p>
 
+
       
-    </div>
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-01-02T04:52:12.000Z" itemprop="datePublished">
+              2018-01-02
+            </time>
+          </div>
+          
+      </section>
+    
+    
 </article>
 
-    </li>
   
-</ul>
-
+</div>
 
             <footer>
     <div>© 2016 - kirasys </div>

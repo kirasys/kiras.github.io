@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>KiraSys</title>
+  <title>SECCON 2017 - Very smooth | KiraSys</title>
   
   
   <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
@@ -63,43 +63,14 @@
 
     <div class="container">
         <div data-pager-shell>
-            <ul class="Index">
-  
+            <div>
+  <article class='ContentView'>
     <header class='PageTitle'>
-        <h1>{ Crypto }</h1>
+        <h1>SECCON 2017 - Very smooth</h1>
     </header>
-  
-  
-    <li>
-      <article class='ListView'>
-    <header class="title">
-      
-        <h1>
-          <a href="/2018/01/05/SECCON-2017-Very-smooth/">SECCON 2017 - Very smooth</a>
-        </h1>
-      
-      <div class='ListMeta'>
-  <time datetime="2018-01-04T21:19:45.000Z" itemprop="datePublished">
-    2018-01-05
-  </time>
-  
-  
-  / 
-  <ul>
-    
-  <li class="meta-text">
-  { <a href="/categories/crypto/">Crypto</a> }
-  </li>
 
-
-  </ul>
-  
-</div>
-
-    </header>
-    <div>
-      
-        <h3 id="1-Question"><a href="#1-Question" class="headerlink" title="1. Question"></a>1. Question</h3><blockquote>
+    <section>
+      <h3 id="1-Question"><a href="#1-Question" class="headerlink" title="1. Question"></a>1. Question</h3><blockquote>
 <p>Very smooth<br>Decrypt index.html from PCAP.<br>Please, submit the flag in the format: “SECCON{“ + Answer + “}”</p>
 <ul>
 <li>Answer is written in index.html<br><br><br></li>
@@ -109,52 +80,26 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:~<span class="comment"># python sovle.py </span></span><br><span class="line">p : 0xe171c91c9e775f06802d83cbf21643a137b576a582e1fee5bbe1566ba5c532400717dfaa2122229c440000000000000000000000000000000000000000000001L</span><br></pre></td></tr></table></figure>
 <p>와이어 샤크에서 ssl key 등록하는 방법은 아래 블로그를 참고<br><br><a href="https://secuof.wordpress.com/2014/12/12/wireshark%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-ssl-%ED%8C%A8%ED%82%B7-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">WireShark를 이용한 SSL 패킷 분석</a><br><br><br></p>
 <h3 id="3-Solve-py"><a href="#3-Solve-py" class="headerlink" title="3. Solve.py"></a>3. Solve.py</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.PublicKey <span class="keyword">import</span> RSA</span><br><span class="line"><span class="keyword">from</span> Crypto.Util.number <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">exkey = <span class="string">"""-----BEGIN PUBLIC KEY-----</span></span><br><span class="line"><span class="string">MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDVRqqCXPYd6Xdl9GT7/kiJrYvy</span></span><br><span class="line"><span class="string">8lohddAsi28qwMXCe2cDWuwZKzdB3R9NEnUxsHqwEuuGJBwJwIFJnmnvWurHjcYj</span></span><br><span class="line"><span class="string">DUddp+4X8C9jtvCaLTgd+baSjo2eB0f+uiSL/9/4nN+vR3FliRm2mByeFCjppTQl</span></span><br><span class="line"><span class="string">yioxCqbXYIMxGO4NcQIDAQAB</span></span><br><span class="line"><span class="string">-----END PUBLIC KEY-----</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">pubkey = RSA.importKey(exkey)</span><br><span class="line">n = pubkey.n</span><br><span class="line">e = pubkey.e</span><br><span class="line"></span><br><span class="line">a,B = <span class="number">2</span>,<span class="number">10000</span></span><br><span class="line">gcd_result,i = <span class="number">1</span>,<span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> gcd_result&lt;=<span class="number">1</span>:</span><br><span class="line">	i += <span class="number">1</span></span><br><span class="line">	<span class="keyword">if</span> i&gt;B:</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	a = pow(a,i,n)</span><br><span class="line">	gcd_result = GCD(a<span class="number">-1</span>,n)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"p : "</span>+hex(gcd_result)</span><br><span class="line">p = gcd_result</span><br><span class="line">q = n/p</span><br><span class="line">d = inverse(e,(p<span class="number">-1</span>)*(q<span class="number">-1</span>))</span><br><span class="line">RSAobj = RSA.construct((n,e,d))</span><br><span class="line">privKey = RSAobj.exportKey(<span class="string">'PEM'</span>)</span><br><span class="line">f = open(<span class="string">'privKey.pem'</span>,<span class="string">'w'</span>)</span><br><span class="line">f.write(privKey)</span><br><span class="line">f.close()</span><br></pre></td></tr></table></figure>
+
       
-    </div>
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-01-04T21:19:45.000Z" itemprop="datePublished">
+              2018-01-05
+            </time>
+          </div>
+          
+      </section>
+    
+    
 </article>
 
-    </li>
-  
-    <li>
-      <article class='ListView'>
-    <header class="title">
-      
-        <h1>
-          <a href="/2017/01/05/p-1-factorization/">p-1 factorization</a>
-        </h1>
-      
-      <div class='ListMeta'>
-  <time datetime="2017-01-04T18:44:46.000Z" itemprop="datePublished">
-    2017-01-05
-  </time>
-  
-  
-  / 
-  <ul>
-    
-  <li class="meta-text">
-  { <a href="/categories/crypto/">Crypto</a> }
-  </li>
-
-
-  </ul>
   
 </div>
-
-    </header>
-    <div>
-      
-        <p>p-1 factorization 알고리즘은 N = pq (p,q 는 소수) 에서 N을 인수 분해하는 알고리즘이다.<br><br></p>
-<h3 id="1-Concept"><a href="#1-Concept" class="headerlink" title="1. Concept"></a>1. Concept</h3><p>p가 소수일 때 a<sup>p-1</sup> = 1 (mod p) 를 만족한다. 마찬가지로 a<sup>k(p-1)</sup> = 1 이므로 a<sup>k(p-1)</sup> - 1 은 p의 곱으로 표현할 수 있다. k(p-1)을 알 수 없으므로 2!, 3!, 4! … n!(n &lt; B-smooth) 사용하고 gcd(a<sup>k(p-1)</sup> - 1,N) 을 계산하여 인수를 찾는다. 그래서 p-1 이 smooth number일 때 사용하기 적절하다.<br><br><br></p>
-<h3 id="2-Algorithm"><a href="#2-Algorithm" class="headerlink" title="2. Algorithm"></a>2. Algorithm</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">a,B = <span class="number">2</span>,<span class="number">10000</span></span><br><span class="line">gcd_result,i = <span class="number">1</span>,<span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> gcd_result&lt;=<span class="number">1</span>:</span><br><span class="line">	i += <span class="number">1</span></span><br><span class="line">	<span class="keyword">if</span> i&gt;B:</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	a = pow(a,i,n)</span><br><span class="line">	gcd_result = GCD(a<span class="number">-1</span>,n)</span><br></pre></td></tr></table></figure>
-      
-    </div>
-</article>
-
-    </li>
-  
-</ul>
-
 
             <footer>
     <div>© 2016 - kirasys </div>
