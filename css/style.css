@@ -455,12 +455,13 @@ figure.highlight,
 .code,
 code {
   font-family: Monaco, Menlo, Consolas, 'Microsoft Yahei', monospace;
-}
-background-color: #f6f8fa {
+  background-color: #f6f8fa;
   font-size: 13px;
   margin: auto 5px;
 }
-background-color: #f6f8fa pre {
+figure.highlight pre,
+.code pre,
+code pre {
   margin: auto;
   overflow-x: auto;
   font-family: inherit;
