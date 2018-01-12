@@ -456,6 +456,8 @@ figure.highlight,
 code {
   font-family: Monaco, Menlo, Consolas, 'Microsoft Yahei', monospace;
   font-size: 13px;
+}
+background-color: #f6f8fa {
   margin: auto 5px;
 }
 background-color: #f6f8fa pre {
