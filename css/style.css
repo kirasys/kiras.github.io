@@ -1,3 +1,4 @@
+@import url("//fonts.googleapis.com/earlyaccess/nanumpenscript.css");
 /*! normalize.css v6.0.0 | MIT License | github.com/necolas/normalize.css */
 
 /* Document
@@ -427,9 +428,8 @@ template {
   display: none;
 }
 
-@import url("//fonts.googleapis.com/earlyaccess/notosanskr.css");
 body {
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Nanum Pen Script', cursive;
   line-height: 1.7em;
   color: #4a4a4a;
   overflow-x: hidden;
