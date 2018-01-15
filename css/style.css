@@ -434,6 +434,10 @@ body {
   color: #4a4a4a;
   overflow-x: hidden;
 }
+h3 {
+  border-bottom: 1px solid #dadcdf;
+  padding-bottom: 0.3em;
+}
 a {
   text-decoration: none;
   color: #686868;
@@ -455,7 +459,7 @@ figure.highlight {
 figure.highlight,
 .code,
 code {
-  font-family: Monaco, Menlo, Consolas, 'Microsoft Yahei', monospace;
+  font-family: 'Nanum Gothic', sans-serif;
   background-color: #f6f8fa;
   font-size: 13px;
   margin: auto 5px;
