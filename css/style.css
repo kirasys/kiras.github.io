@@ -427,8 +427,9 @@ template {
   display: none;
 }
 
+@import url("//fonts.googleapis.com/earlyaccess/nanumpenscript.css");
 body {
-  font-family: "Source Han Serif", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: 'Nanum Pen Script', cursive;
   line-height: 1.7em;
   color: #4a4a4a;
   overflow-x: hidden;
