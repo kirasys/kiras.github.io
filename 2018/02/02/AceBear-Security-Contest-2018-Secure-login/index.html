@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>AceBear Security Contest 2018 - Secure login | KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <div>
+  <article class='ContentView'>
+    <header class='PageTitle'>
+        <h1>AceBear Security Contest 2018 - Secure login</h1>
+    </header>
+
+    <section>
+      <h3 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">s1 = (<span class="keyword">char</span> *)generate_password((<span class="keyword">int</span>)&amp;password);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"Generated password: %s\n"</span>, s1);</span><br><span class="line"> <span class="keyword">if</span> ( !<span class="built_in">strcmp</span>(s1, s2) )</span><br><span class="line"> &#123;</span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">"Congratulations!"</span>);</span><br><span class="line">   fd = open(<span class="string">"flag"</span>, <span class="number">0</span>);</span><br><span class="line">   <span class="keyword">if</span> ( !fd )</span><br><span class="line">   &#123;</span><br><span class="line">     <span class="built_in">puts</span>(<span class="string">"Can not read flag! Please report this bug!"</span>);</span><br><span class="line">     <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>nc에 접속해서 만들어지는 password를 맞추면 flag를 출력해준다. password는 rand() 값을 사용하기 때문에 같은 입력값이라도 실행마다 결과값이 변한다.<br><br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">15</span>; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    *(_DWORD *)nptr = *(_DWORD *)(<span class="number">4</span> * i + a1);</span><br><span class="line">    *(_DWORD *)v9 = dword_804B0C0[i];</span><br><span class="line">    v1 = strtoul(nptr, (<span class="keyword">char</span> **)nptr + <span class="number">2</span>, <span class="number">16</span>);</span><br><span class="line">    v2 = strtoul(v9, (<span class="keyword">char</span> **)v9 + <span class="number">2</span>, <span class="number">16</span>);</span><br><span class="line">    v3 = rand();</span><br><span class="line">    v6 = (<span class="keyword">unsigned</span> __int16)(v2 * ((v6 ^ v1 ^ v3) + <span class="number">1</span>) + (v6 ^ v1 ^ v3));</span><br><span class="line">    <span class="built_in">sprintf</span>((<span class="keyword">char</span> *)s + <span class="number">4</span> * i, <span class="string">"%04X"</span>, v6);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>위는 password를 생성하는 루틴이다. srand(time(0))와 rand를 이용하여 랜덤한 password를 생성하는 것은 python ctypes 모듈로 rand 값을 알아낼 수 있으므로 v2 값만 알아내면 되는데 v2의 값은 key라는 파일에서 읽어온다. 생성되는 password를 맞추기 위해 먼저 key 파일의 내용을 전부 알아내야 한다.<br><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> ctypes <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">e = <span class="keyword">lambda</span> x:hex(x).replace(<span class="string">'0x'</span>,<span class="string">''</span>)</span><br><span class="line">clib = cdll.LoadLibrary(<span class="string">'/home/kirasys/slibc.so.6'</span>)</span><br><span class="line"></span><br><span class="line">key = <span class="string">''</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">   s = remote(<span class="string">'securelogin.acebear.site'</span>,<span class="number">5001</span>)</span><br><span class="line"></span><br><span class="line">   timestamp = clib.time(<span class="number">0</span>)</span><br><span class="line">   clib.srand(int(timestamp)))</span><br><span class="line"></span><br><span class="line">   s.recvuntil(<span class="string">'Give me your name: '</span>)</span><br><span class="line">   s.sendline(<span class="string">'name'</span>)</span><br><span class="line"></span><br><span class="line">   s.recvuntil(<span class="string">'Gime me your password: '</span>)</span><br><span class="line">   password = <span class="string">''</span></span><br><span class="line">   </span><br><span class="line">   sum = <span class="number">0</span></span><br><span class="line">   <span class="keyword">for</span> i <span class="keyword">in</span> range(len(key)/<span class="number">4</span> + <span class="number">1</span>):</span><br><span class="line">      v = (clib.rand() ^ sum)&amp;<span class="number">0xffff</span></span><br><span class="line">      password += e(v)</span><br><span class="line">      <span class="keyword">if</span> len(key[i*<span class="number">4</span>:i*<span class="number">4</span>+<span class="number">4</span>])==<span class="number">4</span>:</span><br><span class="line">         sum = int(key[i*<span class="number">4</span>:i*<span class="number">4</span>+<span class="number">4</span>],<span class="number">16</span>)</span><br><span class="line">         </span><br><span class="line"></span><br><span class="line">   s.sendline(password.ljust(<span class="number">64</span>,<span class="string">'1'</span>))</span><br><span class="line"></span><br><span class="line">   s.recvuntil(<span class="string">'Generated password: '</span>)</span><br><span class="line">   s.recvn(len(key))</span><br><span class="line">   key += s.recvn(<span class="number">4</span>)</span><br><span class="line">   </span><br><span class="line">   s.close()</span><br><span class="line">   <span class="keyword">if</span> len(key)&gt;=<span class="number">64</span>:</span><br><span class="line">      <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> key</span><br></pre></td></tr></table></figure></p>
+<p>v2의 값이 key 파일의 데이터이므로, (v6 ^ v1 ^ v3)을 0으로 만들어주면 생성된 password의 4byte가 key 파일의 데이터가 된다. 이런 방식으로 실행마다 4byte씩 알아낼 수 있는데 로컬과 서버의 시간이 안맞을경우 잘못된 key값이 생성될 수도 있기 때문에 여러번 실행하여 같은 결과값이 나올때가 정확한 key라고 할 수 있다.<br><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> z3 <span class="keyword">import</span> *</span><br><span class="line">key  = <span class="string">'5EDE28F84F7D5C039775B9DFFC1F85673F20C83757934BCD2FBC48868044D193'</span></span><br><span class="line">pw   = <span class="string">'F05664E983F54E5FA6D5D4FFC5BF930743F60D8FC2C78AFBB0AF7C82664F2043'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">64</span>/<span class="number">4</span>):</span><br><span class="line">	a = int(key[i*<span class="number">4</span>:i*<span class="number">4</span>+<span class="number">4</span>],<span class="number">16</span>)</span><br><span class="line">	b = BitVec(<span class="string">'b'</span>,<span class="number">16</span>)</span><br><span class="line">	</span><br><span class="line">	s = Solver()</span><br><span class="line">	s.add((a+<span class="number">1</span>)*(b+<span class="number">1</span>) == int(pw[i*<span class="number">4</span>:i*<span class="number">4</span>+<span class="number">4</span>],<span class="number">16</span>) + <span class="number">1</span>)</span><br><span class="line">	<span class="keyword">if</span> s.check() == unsat:</span><br><span class="line">		<span class="keyword">print</span> <span class="string">"Error!!!"</span></span><br><span class="line">	m = s.model()</span><br><span class="line">	<span class="keyword">print</span> str(m[b])+<span class="string">','</span>,</span><br></pre></td></tr></table></figure></p>
+<p>key 값을 전부 알아냈으면 조건에 맞게 password를 생성해주면 된다. (v6 ^ v1 ^ v3)의 값을 b라고 하고, v2의 값을 a라고 하면 a(b+1) + b = (a+1)(b+1) - 1 의 값을 특정한 값으로 만들어야 한다는 것이다. a는 고정적인 key 값이므로 z3의 BitVec을 이용하여 b의 값이 총 16번 for문을 돌면서 어떤 값이 되어야 하는지 알아낸 뒤, rand 값과 input을 그 값에 맞게 보내면 password를 특정한 값으로 만들 수 있다.<br><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">KEY     = <span class="string">'5EDE28F84F7D5C039775B9DFFC1F85673F20C83757934BCD2FBC48868044D193'</span></span><br><span class="line">gen_pw  = <span class="string">'0000F05664E983F54E5FA6D5D4FFC5BF930743F60D8FC2C78AFBB0AF7C82664F2043'</span></span><br><span class="line">b = [<span class="number">13704</span>, <span class="number">41145</span>, <span class="number">21700</span>, <span class="number">11159</span>, <span class="number">9232</span>, <span class="number">215</span>, <span class="number">1005</span>, <span class="number">6916</span>, <span class="number">38934</span>, <span class="number">7741</span>, <span class="number">8905</span>, <span class="number">8913</span>, <span class="number">58991</span>, <span class="number">14116</span>, <span class="number">64015</span>, <span class="number">7228</span>]</span><br><span class="line"></span><br><span class="line">e = <span class="keyword">lambda</span> x:hex(x).replace(<span class="string">'0x'</span>,<span class="string">''</span>)</span><br><span class="line">clib = cdll.LoadLibrary(<span class="string">'libc.so.6'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">   s = remote(<span class="string">'securelogin.acebear.site'</span>,<span class="number">5001</span>)</span><br><span class="line"></span><br><span class="line">   timestamp = clib.time(<span class="number">0</span>)</span><br><span class="line">   clib.srand(int(timestamp))</span><br><span class="line"></span><br><span class="line">   s.recvuntil(<span class="string">'Give me your name: '</span>)</span><br><span class="line">   s.sendline(<span class="string">'name'</span>)</span><br><span class="line"></span><br><span class="line">   s.recvuntil(<span class="string">'Gime me your password: '</span>)</span><br><span class="line">   password = <span class="string">''</span></span><br><span class="line">   <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">64</span>/<span class="number">4</span>):</span><br><span class="line">      password += e(b[i] ^ (clib.rand()&amp;<span class="number">0xffff</span>) ^ int(gen_pw[i*<span class="number">4</span>:i*<span class="number">4</span>+<span class="number">4</span>],<span class="number">16</span>))</span><br><span class="line"></span><br><span class="line">   s.sendline(password)</span><br><span class="line">   res =  s.recv(<span class="number">1024</span>)</span><br><span class="line">   <span class="keyword">if</span> res.find(<span class="string">'Wrong'</span>)&lt;<span class="number">0</span>:</span><br><span class="line">      s.interactive()</span><br><span class="line">   </span><br><span class="line">   s.close()</span><br></pre></td></tr></table></figure></p>
+<p>b의 값을 전부 알아냈으니 그걸 이용하여 패스워드를 생성하여 보내주면 된다.</p>
+
+
+      
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-02-02T05:39:30.000Z" itemprop="datePublished">
+              2018-02-02
+            </time>
+          </div>
+          
+      </section>
+    
+    
+</article>
+
+  
+</div>
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>
