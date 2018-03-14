@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>HackingCamp 2018 - CrackMe | KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <div>
+  <article class='ContentView'>
+    <header class='PageTitle'>
+        <h1>HackingCamp 2018 - CrackMe</h1>
+    </header>
+
+    <section>
+      <h3 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h3><p>문제는 간단한 크랙미 형식의 문제로 올바른 key를 찾으면 된다. <br><br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">int</span> v0; <span class="comment">// et0@7</span></span><br><span class="line">  <span class="keyword">int</span> i; <span class="comment">// [sp+18h] [bp-198h]@1</span></span><br><span class="line">  <span class="keyword">int</span> v3[<span class="number">100</span>]; <span class="comment">// [sp+1Ch] [bp-194h]@3</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; <span class="number">100</span>; ++i )</span><br><span class="line">    ++v3[i];</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">1</span>; i &lt; <span class="number">100</span>; ++i )</span><br><span class="line">    *(&amp;i + i) += v3[i];</span><br><span class="line">  v0 = __readeflags();</span><br><span class="line">  __writeeflags(v0 | <span class="number">0x100</span>);</span><br><span class="line">  sub_401340();</span><br><span class="line">  *(_DWORD *)(i + <span class="number">184</span>) = &amp;loc_401DF3;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>main 함수에서 사용된 안티 디버깅 때문에 hex-ray로 디컴파일 했을 때 이상하게 나온다. <br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.text:00401DA8                 push    offset loc_401DDF</span><br><span class="line">.text:00401DAD                 push    eax</span><br><span class="line">.text:00401DAE                 mov     ebx, eax</span><br><span class="line">.text:00401DB0                 pop     eax</span><br><span class="line">.text:00401DB1                 push    large dword ptr fs:0</span><br><span class="line">.text:00401DB8                 mov     large fs:0, esp</span><br><span class="line">.text:00401DBF                 mov     eax, ebx</span><br><span class="line">.text:00401DC1                 push    ecx</span><br><span class="line">.text:00401DC2                 mov     ecx, eax</span><br><span class="line">.text:00401DC4                 pop     ecx</span><br><span class="line">.text:00401DC5                 pushf</span><br><span class="line">.text:00401DC6                 db      36h</span><br><span class="line">.text:00401DC6                 or      [esp+1B0h+var_1B0], 100h</span><br><span class="line">.text:00401DCE                 popf</span><br></pre></td></tr></table></figure></p>
+<p>main함수의 어셈 코드를 보면 trap flag를 이용한 예외 기반 안티 디버깅이 있는 것을 확인할 수 있다. 따라서 프로그램이 실제 실행될 때는 0x401DDF로 이동하게 된다. <br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">77A40149   6A 00            PUSH 0x0</span><br><span class="line">77A4014B   51               PUSH ECX</span><br><span class="line">77A4014C   E8 AFFD0000      CALL ntdll_12.ZwContinue</span><br></pre></td></tr></table></figure></p>
+<p>그리고 ZwContinue 함수를 통해 0x401df3으로 이동한다. <br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.text:00401E45                 mov     ecx, tls_value</span><br><span class="line">.text:00401E4B                 mov     [ebp+var_1A0], ecx</span><br><span class="line">.text:00401E51                 cmp     [ebp+var_1A0], 1</span><br><span class="line">.text:00401E58                 jz      short loc_401E6E</span><br><span class="line">.text:00401E5A                 cmp     [ebp+var_1A0], 2</span><br><span class="line">.text:00401E61                 jz      short loc_401E75</span><br><span class="line">.text:00401E63                 cmp     [ebp+var_1A0], 3</span><br><span class="line">.text:00401E6A                 jz      short loc_401E7C</span><br><span class="line">.text:00401E6C                 jmp     short loc_401E81</span><br><span class="line">.text:00401E6E ; ---------------------------------------------------------------------------</span><br><span class="line">.text:00401E6E                 call    sub_401460</span><br><span class="line">.text:00401E73                 jmp     short loc_401E81</span><br><span class="line">.text:00401E75 ; ---------------------------------------------------------------------------</span><br><span class="line">.text:00401E75                 call    loc_401000</span><br><span class="line">.text:00401E7A                 jmp     short loc_401E81</span><br><span class="line">.text:00401E7C ; ---------------------------------------------------------------------------</span><br><span class="line">.text:00401E7C                 call    sub_401440</span><br></pre></td></tr></table></figure></p>
+<p>위 코드는 0x401df3 이후에 실행되는 코드들이다. tls_value 변수는 tls 영역에서 GetLastError() 함수의 반환 값에 따라 1 또는 2로 설정되고 그 값에 따라 실행되는 함수가 다르다. 먼저 tls_value가 2일때 실행되는 함수는 알 수 없는 기계어 코드와 key를 검증하는 함수를 실행한다. 이 함수가 실행되기 전에 다른 곳에서 기계어 코드를 decrypt를 시켜주고 해당 함수가 실행되는 것 같다. tls_value가 1일때 실행되는 함수를 분석해보자. <br><br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// If tls_value equal to 1, this function excute</span></span><br><span class="line">      result = WaitForDebugEvent(&amp;DebugEvent, <span class="number">0xFFFFFFFF</span>);</span><br><span class="line">      <span class="keyword">if</span> ( !result )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">if</span> ( DebugEvent.dwDebugEventCode == <span class="number">1</span> )</span><br><span class="line">      &#123;</span><br><span class="line">        v18 = (<span class="keyword">char</span> *)DebugEvent.u.Exception.ExceptionRecord.ExceptionAddress;</span><br><span class="line">        v12 = DebugEvent.u.Exception.ExceptionRecord.ExceptionCode;</span><br><span class="line">        <span class="keyword">if</span> ( DebugEvent.u.Exception.ExceptionRecord.ExceptionCode == <span class="number">-1073741795</span> )</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="keyword">if</span> ( v18 == off_416000 )</span><br><span class="line">          &#123;</span><br><span class="line">            ReadProcessMemory(ProcessInformation.hProcess, v18 + <span class="number">2</span>, &amp;Buffer, <span class="number">0x6C</span>u, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; <span class="number">0x6C</span>; ++i )</span><br><span class="line">              *(&amp;Buffer + i) ^= <span class="number">0x37</span>u;</span><br><span class="line">            WriteProcessMemory(ProcessInformation.hProcess, v18 + <span class="number">2</span>, &amp;Buffer, <span class="number">0x6C</span>u, <span class="number">0</span>);</span><br><span class="line">            Context.ContextFlags = <span class="number">65543</span>;</span><br><span class="line">            GetThreadContext(ProcessInformation.hThread, &amp;Context);</span><br><span class="line">            Context.Eip += <span class="number">2</span>;</span><br><span class="line">            SetThreadContext(ProcessInformation.hThread, &amp;Context);</span><br><span class="line">          &#125;</span><br></pre></td></tr></table></figure></p>
+<p>해당 함수에서는 프로세스를 fork 시켜서 자식 프로세스를 생성한 뒤 특정 메모리 영역을 xor로 decrypt 한다. 부모 프로세스에서 key를 입력받고 검증하고 루틴이 실행되지 않는걸로 보아서 tls_value는 자식 프로세스인지 부모 프로세스인지 구별해주는 역할을 하고 부모 프로세스에서 자식 프로세스의 코드를 decrypt 해주는 것 같다. <br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.text:00401000 loc_401000:                             ; CODE XREF: main:loc_401E75p</span><br><span class="line">.text:00401000                 push    ebp</span><br><span class="line">.text:00401001                 mov     ebp, esp</span><br><span class="line">.text:00401003                 sub     esp, 80h</span><br><span class="line">.text:00401009                 mov     eax, ___security_cookie</span><br><span class="line">.text:0040100E                 xor     eax, ebp</span><br><span class="line">.text:00401010                 mov     [ebp-4], eax</span><br><span class="line">.text:00401010 ; ---------------------------------------------------------------------------</span><br><span class="line">.text:00401013 byte_401013     db 8Dh, COh              ; DATA XREF: .data:off_416000o</span><br></pre></td></tr></table></figure></p>
+<p>위 함수가 자식 프로세스에서 실행되는 함수이며 0x401013에서 exception이 발생할 것이다. 그러면 부모 프로세스에서는 WaitForDebugEvent 함수와 Read,WriteProcessMemory 함수를 통해 0x401013+2 부터 0x401013+2+0x6c까지 0x37과 xor한다. 그리고 eip에 2를 더해 exception을 일으킨 8D, C0은 넘어간다. decrypt 해서 해당 코드를 보면 key를 입력받는 코드임을 확인할 수 있다. 그 다음은 입력한 key와 0x96를 xor한 뒤, 다시 0x004010E4에서 exception이 발생한다.<br><br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> ( v18 == *(&amp;off_416000 + <span class="number">2</span>) )</span><br><span class="line">&#123;</span><br><span class="line">  ReadProcessMemory(ProcessInformation.hProcess, v18 - <span class="number">13</span>, &amp;Buffer, <span class="number">0xF</span>u, <span class="number">0</span>);</span><br><span class="line">  Buffer = <span class="number">35</span>;</span><br><span class="line">  v26 = <span class="number">0x90</span>u;</span><br><span class="line">  v25 = <span class="number">0x90</span>u;</span><br><span class="line">  WriteProcessMemory(ProcessInformation.hProcess, v18 - <span class="number">13</span>, &amp;Buffer, <span class="number">0xF</span>u, <span class="number">0</span>);</span><br><span class="line">  Context.ContextFlags = <span class="number">65543</span>;</span><br><span class="line">  GetThreadContext(ProcessInformation.hThread, &amp;Context);</span><br><span class="line">  v3 = GetCurrentProcess();</span><br><span class="line">  ((<span class="keyword">void</span> (__stdcall *)(HANDLE, <span class="keyword">signed</span> <span class="keyword">int</span>, <span class="keyword">int</span> *, <span class="keyword">signed</span> <span class="keyword">int</span>, _DWORD))v13)(v3, <span class="number">31</span>, &amp;v17, <span class="number">4</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">if</span> ( v17 )</span><br><span class="line">    Context.Eip -= <span class="number">0x61</span>;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    Context.Eip += <span class="number">3</span>;</span><br><span class="line">  SetThreadContext(ProcessInformation.hThread, &amp;Context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>위는 해당 exception을 처리해주는 부분이다. WriteProcessMemory를 통해 기계어를 바꾸는 곳을 찾아가보면 처음에 key를 0x96과 xor시킨 부분에서 0x96을 0x23으로 바꿔주고 exception을 일으켰던 부분을 0x90(nop)으로 바꿔준다. 그리고 eip -= 0x61을 통해 xor 연산을 한번 더 진행한다. <br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.text:004010E4 byte_4010E4     db 90h, 090h            ; CODE XREF: .text:004010CBj</span><br><span class="line">.text:004010E4                                         ; DATA XREF: .data:00416008o</span><br><span class="line">.text:004010E6 byte_4010E6     db 0CCh                 ; DATA XREF: sub_401460+EFo</span><br><span class="line">.text:004010E6                                         ; sub_401460+500o</span><br><span class="line">.text:004010E7                 align 4</span><br><span class="line">.text:004010E8                 lea     eax, [ebp-68h]</span><br><span class="line">.text:004010EB                 push    eax</span><br><span class="line">.text:004010EC                 call    sub_4011D0</span><br><span class="line">.text:004010F1                 jmp     short loc_4010FF</span><br><span class="line">.text:004010F3 ; ---------------------------------------------------------------------------</span><br><span class="line">.text:004010F3                 lea     eax, [ebp-68h]</span><br><span class="line">.text:004010F6                 push    eax</span><br><span class="line">.text:004010F7                 call    sub_401AA0</span><br><span class="line">.text:004010FC                 add     esp, 4</span><br></pre></td></tr></table></figure></p>
+<p>그렇게 xor을 총 2번 거치고 0x4010e6에서 0xcc 때문에 다시 exception이 발생하는데 여기서는 간단하게 eip만 이동시켜서 sub_4010f3으로 이동한다. sub_4010f3에서는 key와 특정 값을 비교하는 루틴이 전부다. 해당 값들을 뽑아와서 (0x96 ^ 0x23)과 xor 시켜주면 flag를 얻을 수 있다.</p>
+
+
+      
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-03-13T07:01:28.000Z" itemprop="datePublished">
+              2018-03-13
+            </time>
+          </div>
+          
+      </section>
+    
+    
+</article>
+
+  
+</div>
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>
