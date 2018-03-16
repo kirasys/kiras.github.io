@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>BAEKJOON - 2294: 동전2 | KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <div>
+  <article class='ContentView'>
+    <header class='PageTitle'>
+        <h1>BAEKJOON - 2294: 동전2</h1>
+    </header>
+
+    <section>
+      <h3 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> coins[<span class="number">1000001</span>];</span><br><span class="line"><span class="keyword">int</span> *temp_coins;</span><br><span class="line"><span class="keyword">int</span> *current_coins;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, k;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; k;</span><br><span class="line">    <span class="keyword">int</span>* init_coins = <span class="keyword">new</span> <span class="keyword">int</span>[n];</span><br><span class="line">    temp_coins = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1000001</span>];</span><br><span class="line">    current_coins = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1000001</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; n;i++) &#123;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; init_coins[i];</span><br><span class="line">        temp_coins[i] = init_coins[i];</span><br><span class="line">        coins[init_coins[i]] = init_coins[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (coins[k]) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">bool</span> impossible = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">int</span> current = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">int</span> cnt = n;</span><br><span class="line">    <span class="keyword">int</span> cnt2 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (!coins[k]) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; n;i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>;j &lt; cnt;j++) &#123;</span><br><span class="line">                <span class="keyword">int</span> temp = init_coins[i] + temp_coins[j];</span><br><span class="line">                <span class="keyword">if</span> (temp &gt; <span class="number">10000</span> || temp&gt;k || coins[temp]) &#123;</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                current_coins[cnt2++] = temp;</span><br><span class="line">                coins[temp] = temp;</span><br><span class="line">                impossible = <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (impossible) &#123;</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; <span class="number">-1</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        current++;</span><br><span class="line">        swap(temp_coins, current_coins);</span><br><span class="line">        impossible = <span class="literal">true</span>;</span><br><span class="line">        cnt = cnt2;</span><br><span class="line">        cnt2 = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; current;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>동전1 문제와 달리 동전의 가치가 서로 배수 관계가 아니다. 그래서 그리디로 풀 수 없기 때문에 다른 방식으로 접근해보았다. 동전 2개를 더한거를 2개의 동전의 합이라고 생각하지 않고, 새로운 동전 1개라고 생각하고 새로운 동전을 만든다. 2개로 만들어진 동전에서 K가 있는지 확인하고 없으면, 다시 1개로 이루어진 동전을 더해서 동전 3개를 사용해서 만든 새로운 동전을 저장한다. 새로운 동전이 10000이나 K를 넘거나 이미 똑같은 가치가 존재하면 버리고, 모든 동전이 K보다 커지면 K를 만들 수 없는 경우이므로 -1을 출력하면 된다. DP 예제라는 것을 알고 시작해서 그런지 애매하게 DP를 사용하여 해결하였다.</p>
+
+
+      
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-03-16T12:51:27.000Z" itemprop="datePublished">
+              2018-03-16
+            </time>
+          </div>
+          
+      </section>
+    
+    
+</article>
+
+  
+</div>
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>
